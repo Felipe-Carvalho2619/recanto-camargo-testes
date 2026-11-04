@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
+import './CalendarioCustom.css';
 import { verificarSeFeriado } from '../../utils/feriados';
 import { API_BASE, IS_API_AVAILABLE } from '../../utils/api';
 

@@ -27,6 +27,19 @@ const banco = {
         estado.consultas.push({ sql: texto, parametros });
         if (texto.startsWith('SELECT Usu_Id FROM usu_usuario')) return [[...(parametros[0] === 666 ? [] : [{ Usu_Id: parametros[0] }])]];
         if (texto.startsWith('SELECT h.Usu_Id')) return [[{ Usu_Id: parametros[0] }]];
+        if (texto.startsWith('SELECT Imo_Id, Imo_Nome, Imo_ValorFixo FROM imo_imovel')) {
+            return [[{ Imo_Id: 1, Imo_Nome: 'Recanto Camargo 1', Imo_ValorFixo: '150.00' }]];
+        }
+        if (texto.startsWith('SELECT Imo_Id FROM imo_imovel')) {
+            assert.ok(estado.transacao);
+            return [[{ Imo_Id: 1 }]];
+        }
+        if (texto.startsWith('SELECT Imo_ValorFixo, Imo_ValorFimSemana FROM imo_imovel')) {
+            return [[{ Imo_ValorFixo: '150.00', Imo_ValorFimSemana: '200.00' }]];
+        }
+        if (texto.startsWith('SELECT DATE_FORMAT(Dat_Inicio')) {
+            return [[]];
+        }
         if (texto.startsWith('SELECT Imo_ValorFixo')) {
             assert.ok(estado.transacao);
             assert.match(texto, /FOR UPDATE$/);
@@ -160,8 +173,9 @@ test('HTTP: marcar-todas ignora Usu_Id no corpo e altera apenas usuário autenti
 });
 
 function reserva() {
-    const checkin = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
-    const checkout = new Date(Date.now() + 32 * 86400000).toISOString().slice(0, 10);
+    // Datas futuras fixas de segunda a quarta (dias de semana sem variação de fim de semana)
+    const checkin = '2026-12-07';
+    const checkout = '2026-12-09';
     return { checkin, checkout, hospedes: 2, observacoes: 'Observação privada: não deve ir ao email.', valorTotal: 0.01, proprietarioId: 666, hospedeEmail: 'intruso@example.com' };
 }
 
