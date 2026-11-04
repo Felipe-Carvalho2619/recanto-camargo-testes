@@ -10,8 +10,8 @@ function reiniciar() {
         transacao: false,
         pendentes: [],
         bloqueios: [
-            { Bld_Id: 10, Imo_Id: 1, Bld_Data: '2026-11-01', Bld_Motivo: 'Pintura', Bld_Status: 'ATIVO' },
-            { Bld_Id: 11, Imo_Id: 1, Bld_Data: '2026-11-02', Bld_Motivo: 'Pintura', Bld_Status: 'ATIVO' },
+            { Bld_Id: 10, Imo_Id: 1, Bld_Data: '2026-12-01', Bld_Motivo: 'Pintura', Bld_Status: 'ATIVO' },
+            { Bld_Id: 11, Imo_Id: 1, Bld_Data: '2026-12-02', Bld_Motivo: 'Pintura', Bld_Status: 'ATIVO' },
         ],
         hospedesBloqueados: [
             { Blo_Id: 99, Imo_Id: 1, Usu_Id: 77, Blo_Motivo: 'Mau comportamento' }
@@ -45,9 +45,18 @@ const bancoMock = {
             return id === 77 || id === 41 ? [[{ Usu_Id: id }]] : [[]];
         }
 
-        // Busca valor da diária
-        if (texto.startsWith('SELECT Imo_ValorFixo')) {
-            return [[{ Imo_ValorFixo: '200.00' }]];
+        // Busca valor da diária e resolução do imóvel
+        if (texto.startsWith('SELECT Imo_Id, Imo_Nome, Imo_ValorFixo FROM imo_imovel') || texto.startsWith('SELECT Imo_ValorFixo')) {
+            return [[{ Imo_Id: 1, Imo_Nome: 'Recanto Camargo 1', Imo_ValorFixo: '200.00', Imo_ValorFimSemana: '250.00' }]];
+        }
+        if (texto.startsWith('SELECT Imo_ValorFixo, Imo_ValorFimSemana FROM imo_imovel')) {
+            return [[{ Imo_ValorFixo: '200.00', Imo_ValorFimSemana: '250.00' }]];
+        }
+        if (texto.startsWith('SELECT Imo_Id FROM imo_imovel')) {
+            return [[{ Imo_Id: 1 }]];
+        }
+        if (texto.startsWith('SELECT DATE_FORMAT(Dat_Inicio')) {
+            return [[]];
         }
 
         // Conflito de reservas ao criar bloqueio
@@ -75,7 +84,7 @@ const bancoMock = {
         }
 
         // Remoção / Cancelamento de bloqueio
-        if (texto.startsWith("UPDATE bld_bloqueiodata SET Bld_Status = 'CANCELADO'")) {
+        if ((texto.includes("UPDATE bld_bloqueiodata") && texto.includes("Bld_Status = 'CANCELADO'"))) {
             const id = parametros[0];
             const item = estado.bloqueios.find(b => b.Bld_Id === id && b.Bld_Status === 'ATIVO');
             if (item) {
@@ -271,8 +280,8 @@ test('Reserva: impede criação em data bloqueada no calendário pelo proprietá
         method: 'POST',
         cookie: tokenHospede(41),
         body: {
-            checkin: '2026-11-01',
-            checkout: '2026-11-03',
+            checkin: '2026-12-01',
+            checkout: '2026-12-03',
             hospedes: 2
         }
     });

@@ -1,0 +1,58 @@
+/**
+ * ==============================================================================
+ * RECANTO CAMARGO — GESTÃO DE CUPONS DO PROPRIETÁRIO
+ * ==============================================================================
+ */
+
+.cupom-card-moderno {
+  background: var(--rc-card);
+  border: 1px solid var(--rc-line);
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: var(--rc-sh);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  transition: var(--rc-trans);
+}
+
+.cupom-card-moderno:hover {
+  border-color: var(--rc-u1);
+}
+
+.cupom-codigo-badge {
+  font-family: monospace;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  background: var(--rc-fill);
+  color: var(--rc-ink);
+  padding: 0.3rem 0.75rem;
+  border-radius: 8px;
+  display: inline-block;
+  border: 1px dashed var(--rc-line);
+}
+
+.cupom-valor-destaque {
+  font-family: var(--rc-serif);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--rc-u1-text);
+  line-height: 1.2;
+}
+
+.btn-copiar-cupom {
+  background: var(--rc-card);
+  border: 1px solid var(--rc-line);
+  color: var(--rc-ink);
+  border-radius: var(--rc-r-pill, 999px);
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--rc-trans);
+}
+
+.btn-copiar-cupom:hover {
+  background: var(--rc-fill);
+}

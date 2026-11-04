@@ -14,8 +14,9 @@ const Configuracoes          = lazy(() => import("./pages/Configuracoes"));
 const Reserva                = lazy(() => import("./pages/Reserva"));
 const Avaliacoes             = lazy(() => import("./pages/Avaliacoes"));
 const Fotos                  = lazy(() => import("./pages/Fotos"));
+const DashboardProprietario  = lazy(() => import("./pages/proprietario/DashboardProprietario"));
 const DashboardAdministrador = lazy(() => import("./pages/DashboardAdministrador"));
-const DashboardCliente       = lazy(() => import("./pages/DashboardCliente"));
+const DashboardCliente       = lazy(() => import("./pages/cliente/DashboardCliente"));
 const ReservaConcluida       = lazy(() => import("./pages/ReservaConcluida"));
 const TermosDeUso             = lazy(() => import("./pages/TermosDeUso"));
 const Privacidade             = lazy(() => import("./pages/Privacidade"));
@@ -31,6 +32,7 @@ const ROTAS_COM_TEMA = [
   '/recuperarsenha',
   '/reservaconcluida',
   '/dashboardcliente',
+  '/dashboardproprietario',
   '/dashboardadministrador',
   '/configuracoes',
 ];
@@ -39,7 +41,10 @@ const ROTAS_SEM_LAYOUT = [
   '/Login',
   '/Cadastro',
   '/RecuperarSenha',
+  '/DashboardProprietario',
+  '/dashboardproprietario',
   '/DashboardAdministrador',
+  '/dashboardadministrador',
   '/DashboardCliente',
   '/ReservaConcluida'
 ];
@@ -114,7 +119,10 @@ function AppContent() {
             <Route path="/termosdeuso"            element={<Navigate to="/TermosDeUso" replace />} />
             <Route path="/Privacidade"            element={<Privacidade />} />
             <Route path="/privacidade"            element={<Navigate to="/Privacidade" replace />} />
-            <Route path="/DashboardAdministrador" element={<RotaProtegida elemento={<DashboardAdministrador />} tipoRequerido="proprietario" />} />
+            <Route path="/DashboardProprietario"  element={<RotaProtegida elemento={<DashboardProprietario />} tipoRequerido="proprietario" />} />
+            <Route path="/dashboardproprietario"  element={<Navigate to="/DashboardProprietario" replace />} />
+            <Route path="/DashboardAdministrador" element={<Navigate to="/DashboardProprietario" replace />} />
+            <Route path="/dashboardadministrador" element={<Navigate to="/DashboardProprietario" replace />} />
             <Route path="/DashboardCliente"       element={<RotaProtegida elemento={<DashboardCliente />} tipoRequerido="hospede" />} />
             <Route path="*"                       element={<Navigate to="/" replace />} />
           </Routes>

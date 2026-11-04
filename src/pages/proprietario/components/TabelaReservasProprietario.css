@@ -1,0 +1,149 @@
+/**
+ * ==============================================================================
+ * RECANTO CAMARGO — TABELA DE RESERVAS DO PROPRIETÁRIO
+ * ==============================================================================
+ */
+
+.tabela-wrapper-admin {
+  background: var(--rc-card);
+  border: 1px solid var(--rc-line);
+  border-radius: var(--rc-r, 18px);
+  box-shadow: var(--rc-sh);
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+
+.tabela-header-admin {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--rc-line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.filtros-status-admin {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.filtro-btn-admin {
+  background: var(--rc-fill);
+  border: 1px solid transparent;
+  color: var(--rc-ink);
+  font-size: 0.825rem;
+  font-weight: 600;
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--rc-r-pill, 999px);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: var(--rc-trans);
+}
+
+.filtro-btn-admin:hover {
+  background: var(--rc-line);
+}
+
+.filtro-btn-admin.ativo {
+  background: var(--rc-u1);
+  color: #1a0b00;
+  font-weight: 700;
+}
+
+.filtro-count {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: var(--rc-r-pill, 999px);
+  padding: 1px 6px;
+  font-size: 0.725rem;
+}
+
+:root[data-theme="dark"] .filtro-count {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.tabela-admin {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.tabela-admin th {
+  padding: 0.85rem 1.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rc-muted);
+  border-bottom: 1px solid var(--rc-line);
+  background: var(--rc-bg);
+}
+
+.tabela-admin td {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--rc-line);
+  color: var(--rc-ink);
+  vertical-align: middle;
+}
+
+.linha-tabela-admin {
+  transition: background 0.15s;
+}
+
+.linha-tabela-admin:hover {
+  background: var(--rc-fill);
+}
+
+.id-reserva {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--rc-muted);
+  font-family: monospace;
+}
+
+.mini-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--rc-u1);
+  color: #1a0b00;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+/* ── Paginação ────────────────────────────────────────────────────────────── */
+.paginacao-admin {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--rc-line);
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.btn-numero-pagina {
+  background: var(--rc-card);
+  border: 1px solid var(--rc-line);
+  color: var(--rc-ink);
+  border-radius: var(--rc-r-pill, 999px);
+  min-width: 36px;
+  height: 36px;
+  display: inline-grid;
+  place-items: center;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--rc-trans);
+}
+
+.btn-numero-pagina:hover,
+.btn-numero-pagina.ativo {
+  background: var(--rc-u1);
+  color: #1a0b00;
+  border-color: var(--rc-u1);
+}

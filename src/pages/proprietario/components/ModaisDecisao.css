@@ -1,0 +1,57 @@
+/**
+ * ==============================================================================
+ * RECANTO CAMARGO — MODAIS DE DECISÃO E DETALHES
+ * ==============================================================================
+ */
+
+.modal-reserva-admin {
+  font-family: var(--rc-sans);
+}
+
+.modal-reserva-admin .modal-content {
+  background: var(--rc-card);
+  border: 1px solid var(--rc-line);
+  border-radius: 20px;
+  box-shadow: var(--rc-sh-pop);
+}
+
+.modal-reserva-admin .modal-header {
+  border-bottom: 1px solid var(--rc-line);
+  padding: 1.25rem 1.5rem;
+}
+
+.modal-reserva-admin .modal-title {
+  font-family: var(--rc-serif);
+  font-weight: 600;
+  color: var(--rc-ink);
+  font-size: 1.4rem;
+}
+
+.modal-reserva-admin .modal-body {
+  padding: 1.5rem;
+  color: var(--rc-ink);
+}
+
+.modal-reserva-admin .modal-footer {
+  border-top: 1px solid var(--rc-line);
+  background: var(--rc-card);
+  padding: 1rem 1.5rem;
+  border-radius: 0 0 20px 20px;
+}
+
+.nome-hospede-modal {
+  font-family: var(--rc-serif);
+  font-weight: 600;
+  font-size: 1.15rem;
+  line-height: 1.25;
+  color: var(--rc-ink);
+}
+
+.label-secao-modal {
+  font-size: 0.725rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--rc-muted);
+  margin-bottom: 0.5rem;
+}

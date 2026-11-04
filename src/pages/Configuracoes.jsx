@@ -282,7 +282,7 @@ function Configuracoes() {
     <div className="rc-home cfg-pagina">
       <div className="rc-wrap">
         <header className="cfg-head">
-          <Link to={ehProprietario ? '/DashboardAdministrador' : '/DashboardCliente'} className="cfg-voltar">
+          <Link to={ehProprietario ? '/DashboardProprietario' : '/DashboardCliente'} className="cfg-voltar">
             <i className="bi bi-arrow-left" aria-hidden="true" /> {t('Voltar ao painel')}
           </Link>
           <span className="rc-eyebrow">{t('Sua conta')}</span>

@@ -1,0 +1,71 @@
+/**
+ * ==============================================================================
+ * RECANTO CAMARGO — GESTÃO DE DIÁRIAS (PREÇOS)
+ * ==============================================================================
+ */
+
+.diaria-card {
+  background: var(--rc-card);
+  border: 1px solid var(--rc-line);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: var(--rc-sh);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.diaria-valor-atual {
+  font-family: var(--rc-serif);
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: var(--rc-ink);
+  line-height: 1.1;
+}
+
+.seletor-unidade-admin {
+  display: inline-flex;
+  gap: 6px;
+  padding: 5px;
+  margin-bottom: 1rem;
+  background: var(--rc-card);
+  border: 1px solid var(--rc-line);
+  border-radius: var(--rc-r-pill, 999px);
+  flex-wrap: wrap;
+}
+
+.seletor-unidade-admin button {
+  border: none;
+  background: transparent;
+  color: var(--rc-muted);
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.45rem 1rem;
+  border-radius: var(--rc-r-pill, 999px);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: var(--rc-trans);
+}
+
+.seletor-unidade-admin button:hover {
+  color: var(--rc-ink);
+}
+
+.seletor-unidade-admin button.ativo {
+  background: var(--cor-unidade, var(--rc-u1));
+  color: #1a0b00;
+  font-weight: 700;
+}
+
+.seletor-unidade-admin button .dot-unidade {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cor-unidade, var(--rc-u1));
+}
+
+.seletor-unidade-admin button.ativo .dot-unidade {
+  background: currentColor;
+}

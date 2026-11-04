@@ -1,0 +1,48 @@
+/**
+ * ==============================================================================
+ * RECANTO CAMARGO — KPIS E GRÁFICOS DO PROPRIETÁRIO
+ * ==============================================================================
+ */
+
+.kpi-grid-moderno {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.kpi-card-moderno {
+  background: var(--rc-card);
+  border: 1px solid var(--rc-line);
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: var(--rc-sh);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.titulo-kpi-moderno {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rc-muted);
+}
+
+.valor-kpi-moderno {
+  font-family: var(--rc-serif);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--rc-ink);
+  line-height: 1.1;
+}
+
+.dash-section-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--rc-muted);
+  margin-bottom: 0.75rem;
+}

@@ -1,0 +1,171 @@
+/**
+ * ==============================================================================
+ * RECANTO CAMARGO — PAINEL DO PROPRIETÁRIO (DASHBOARD)
+ * ==============================================================================
+ * Orquestrador principal da área administrativa do anfitrião.
+ * Importa os submódulos de Tabela, Calendário, Diárias, Cupons, Modais e KPIs.
+ */
+
+@import './components/TabelaReservasProprietario.css';
+@import './components/GestaoDiarias.css';
+@import './components/GestaoCupons.css';
+@import './components/CalendarioBloqueios.css';
+@import './components/ModaisDecisao.css';
+@import './components/KpisGraficos.css';
+
+/* ── Layout Shell ─────────────────────────────────────────────────────────── */
+.dashboard-admin-shell {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--rc-bg);
+  color: var(--rc-ink);
+  font-family: var(--rc-sans);
+}
+
+/* ── Barra Lateral (Sidebar) ──────────────────────────────────────────────── */
+.dashboard-admin-sidebar {
+  width: 260px;
+  background: var(--rc-card);
+  border-right: 1px solid var(--rc-line);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: 40;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+.sidebar-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--rc-line);
+}
+
+.sidebar-brand {
+  font-family: var(--rc-logo);
+  font-size: 1.6rem;
+  color: var(--rc-u1);
+  text-decoration: none;
+  display: block;
+}
+
+.sidebar-menu {
+  padding: 1rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+.sidebar-menu-btn {
+  background: none;
+  border: none;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  color: var(--rc-muted);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: var(--rc-trans);
+  text-align: left;
+}
+
+.sidebar-menu-btn:hover {
+  background: var(--rc-fill);
+  color: var(--rc-ink);
+}
+
+.sidebar-menu-btn.ativo {
+  background: var(--rc-fill);
+  color: var(--rc-u1);
+  font-weight: 700;
+}
+
+.sidebar-menu-btn i {
+  font-size: 1.15rem;
+}
+
+.sidebar-footer {
+  padding: 1rem 0.75rem;
+  border-top: 1px solid var(--rc-line);
+}
+
+/* ── Topbar (Barra Superior) ──────────────────────────────────────────────── */
+.dashboard-admin-topbar {
+  background: var(--rc-card);
+  border-bottom: 1px solid var(--rc-line);
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+.topbar-titulo {
+  font-family: var(--rc-serif);
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--rc-ink);
+  margin: 0;
+}
+
+.topbar-sub {
+  font-size: 0.85rem;
+  color: var(--rc-muted);
+}
+
+/* ── Área de Conteúdo ─────────────────────────────────────────────────────── */
+.dashboard-admin-conteudo {
+  flex-grow: 1;
+  padding: 2rem;
+  max-width: 1300px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ── Formulários Padronizados dentro do Painel ────────────────────────────── */
+:is(.dashboard-admin-shell, .adm-modal, .modal-reserva-admin) .form-control,
+:is(.dashboard-admin-shell, .adm-modal, .modal-reserva-admin) .form-select {
+  background-color: var(--rc-card);
+  border: 1px solid var(--rc-line);
+  color: var(--rc-ink);
+  border-radius: 12px;
+  padding: 0.65rem 1rem;
+}
+
+:is(.dashboard-admin-shell, .adm-modal, .modal-reserva-admin) select option,
+:is(.dashboard-admin-shell, .adm-modal, .modal-reserva-admin) .form-select option {
+  background-color: var(--rc-card);
+  color: var(--rc-ink);
+}
+
+:is(.dashboard-admin-shell, .adm-modal, .modal-reserva-admin) .form-control:focus,
+:is(.dashboard-admin-shell, .adm-modal, .modal-reserva-admin) .form-select:focus {
+  background-color: var(--rc-card);
+  color: var(--rc-ink);
+  border-color: var(--rc-u1);
+  box-shadow: 0 0 0 3px rgba(255, 117, 31, 0.22);
+}
+
+/* ── Responsivo (Mobile & Tablets) ────────────────────────────────────────── */
+@media (max-width: 991px) {
+  .dashboard-admin-sidebar {
+    position: fixed;
+    transform: translateX(-100%);
+  }
+  .dashboard-admin-sidebar.aberta {
+    transform: translateX(0);
+  }
+  .dashboard-admin-conteudo {
+    padding: 1.25rem;
+  }
+}

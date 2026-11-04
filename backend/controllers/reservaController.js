@@ -347,7 +347,7 @@ exports.criarReserva = async (req, res) => {
                 { rotulo: 'Valor Total', valor: valorTotalFmt }
             ],
             botaoTexto: 'Avaliar Solicitação',
-            botaoUrl: `${frontendUrl}/#/DashboardAdministrador`
+            botaoUrl: `${frontendUrl}/#/DashboardProprietario`
         };
 
         const corpoHtmlHospede = criarHtmlEmail(

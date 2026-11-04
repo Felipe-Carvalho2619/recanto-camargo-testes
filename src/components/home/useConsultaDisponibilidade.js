@@ -4,7 +4,7 @@ import { API_BASE, IS_API_AVAILABLE } from "../../utils/api";
 import { MAX_HOSPEDES, unidades } from "../../data/conteudoSite";
 import { formatarData, linkWhats } from "./links";
 
-const ESTADO_INICIAL = { unidade: "1", checkin: "", checkout: "", hospedes: "" };
+const ESTADO_INICIAL = { unidade: "", checkin: "", checkout: "", hospedes: "" };
 
 // Mantém a regra de consulta existente. Sem API (preview) ou sem suporte à unidade,
 // nunca simula disponibilidade: oferece o WhatsApp.
@@ -25,7 +25,9 @@ export function useConsultaDisponibilidade() {
   const consultar = useCallback(
     async (origem) => {
       const falha = (msg, vars) => setResultado({ tipo: "erro", msg, vars, origem });
-      const { checkin, checkout, hospedes } = busca;
+      const { checkin, checkout, hospedes, unidade: unidadeEscolhida } = busca;
+
+      if (!unidadeEscolhida) return falha("Selecione a unidade desejada.");
 
       if (!checkin || !checkout) return falha("Selecione as datas de entrada e saída.");
       if (!hospedes) return falha("Informe o número de hóspedes.");
@@ -34,7 +36,8 @@ export function useConsultaDisponibilidade() {
         return falha("A saída deve ser depois da entrada.");
       }
 
-      const unidade = unidades.find((u) => String(u.id) === String(busca.unidade)) ?? unidades[0];
+      const unidade = unidades.find((u) => String(u.id) === String(unidadeEscolhida));
+      if (!unidade) return falha("Selecione a unidade desejada.");
       const textoZap = `Olá! Gostaria de consultar o ${unidade.nome} de ${formatarData(checkin)} a ${formatarData(checkout)} para ${hospedes} hóspede${Number(hospedes) > 1 ? "s" : ""}.`;
       const whatsapp = linkWhats(textoZap);
 

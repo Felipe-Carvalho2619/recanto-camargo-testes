@@ -1,0 +1,41 @@
+/**
+ * ==============================================================================
+ * RECANTO CAMARGO — CALENDÁRIO ADMINISTRATIVO & BLOQUEIOS
+ * ==============================================================================
+ */
+
+.calendario-wrapper-admin {
+  background: var(--rc-card);
+  border: 1px solid var(--rc-line);
+  border-radius: 16px;
+  box-shadow: var(--rc-sh);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.calendario-mes-titulo {
+  font-family: var(--rc-serif);
+  font-weight: 600;
+  font-size: 1.15rem;
+  color: var(--rc-ink);
+  border-bottom: 1px solid var(--rc-line);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.item-checkin-card {
+  background: var(--rc-bg);
+  border: 1px solid var(--rc-line);
+  border-radius: 14px;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  transition: var(--rc-trans);
+}
+
+.item-checkin-card:hover {
+  background: var(--rc-card);
+  border-color: var(--rc-muted);
+}

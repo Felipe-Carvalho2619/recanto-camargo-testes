@@ -78,7 +78,7 @@ function MenuUsuario() {
             
             {tipo === 'proprietario' && (
               <>
-                <button className="menu-item" onClick={() => { navigate('/DashboardAdministrador'); setAberto(false); }}>
+                <button className="menu-item" onClick={() => { navigate('/DashboardProprietario'); setAberto(false); }}>
                   <i className="bi bi-speedometer2"></i> Painel Proprietário
                 </button>
               </>

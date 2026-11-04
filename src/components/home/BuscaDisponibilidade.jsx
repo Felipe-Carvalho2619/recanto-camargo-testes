@@ -89,6 +89,7 @@ function BuscaDisponibilidade({
         <div className="rc-field">
           <label htmlFor={idUnidade}>{t("Unidade")}</label>
           <select id={idUnidade} value={busca.unidade} onChange={(e) => atualizar({ unidade: e.target.value })}>
+            <option value="">{t("Qual unidade?")}</option>
             {unidades.map((u) => (
               <option key={u.id} value={u.id}>{u.nome}</option>
             ))}

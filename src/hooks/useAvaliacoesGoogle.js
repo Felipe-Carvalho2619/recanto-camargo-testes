@@ -48,7 +48,10 @@ export function useAvaliacoesGoogle() {
     setErro(null);
     try {
       const chave = import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
-      if (!chave || chave === 'sua_chave_aqui') throw new Error('chave não configurada');
+      if (!chave || chave === 'sua_chave_aqui') {
+        setCarregando(false);
+        return;
+      }
 
       await carregarSDK(chave);
 

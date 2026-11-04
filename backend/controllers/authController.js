@@ -296,14 +296,14 @@ exports.login = async (req, res) => {
 };
 
 exports.sessao = (req, res) => {
-    const token = req.cookies.token;
-    if (!token) return res.status(401).json({ error: 'Não autenticado.' });
+    const token = req.cookies?.token;
+    if (!token) return res.status(200).json({ usuario: null });
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         res.json({ usuario: decoded });
     } catch (err) {
-        res.status(401).json({ error: 'Sessão expirada.' });
+        res.status(200).json({ usuario: null, expirado: true });
     }
 };
 
