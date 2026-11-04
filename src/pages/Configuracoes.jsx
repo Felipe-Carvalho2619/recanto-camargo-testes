@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { useAutenticacao } from '../hooks/useAutenticacao';
 import { usePreferencias } from '../hooks/usePreferencias';
 import { API_BASE, IS_API_AVAILABLE } from '../utils/api';
-import '../components/home/home.css';
 import './Configuracoes.css';
 
 const REGRAS_SENHA = [

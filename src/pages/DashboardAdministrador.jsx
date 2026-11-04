@@ -11,7 +11,6 @@ import { usePreferencias } from '../hooks/usePreferencias';
 import Notificacoes from '../components/UI/Notificacoes';
 import { API_BASE } from '../utils/api';
 import 'react-calendar/dist/Calendar.css';
-import '../components/home/home.css';
 import './DashboardAdministrador.css';
 
 // ─── Constantes & Utilitários ────────────────────────────────────────────────
@@ -2869,7 +2868,7 @@ function DashboardAdministrador() {
     const matchReserva = texto.match(/#(\d+)/);
     const reservaId = matchReserva ? matchReserva[1] : null;
 
-    if (texto.includes('avaliação') || texto.includes('avaliacao') || texto.includes('avaliou')) {
+    if (texto.includes('avalia') || texto.includes('experiência') || texto.includes('experiencia') || notificacao.icone === 'bi-star') {
       setAbaAtiva('avaliacoes');
     } else if (texto.includes('cupom') || texto.includes('cupons')) {
       setAbaAtiva('cupons');

@@ -10,7 +10,6 @@ import { usePreferencias } from '../hooks/usePreferencias';
 import Notificacoes from '../components/UI/Notificacoes';
 import { API_BASE, IS_API_AVAILABLE } from '../utils/api';
 import { contato } from '../data/conteudoSite';
-import '../components/home/home.css';
 import './DashboardCliente.css';
 
 const CHAVE_RESERVAS_CLIENTE = 'recanto_reservas_cliente';
@@ -1223,14 +1222,28 @@ function DashboardCliente() {
   const [feedback,      setFeedback]      = useState({ tipo: '', msg: '' });
   const [reputacao,     setReputacao]     = useState({ nota: 'Novo', badge: 'Novo Hóspede', totalAvaliadas: 0 });
 
+  // Modais
+  const [modalDetalhe,  setModalDetalhe]  = useState(null);
+  const [modalCancelar, setModalCancelar] = useState(null);
+  const [modalAvaliar,  setModalAvaliar]  = useState(null);
+  const [avaliacaoEnviando, setAvaliacaoEnviando] = useState(false);
+  const [erroAvaliacao, setErroAvaliacao] = useState('');
+  const [pagandoReservaId, setPagandoReservaId] = useState(null);
+  const [cancelando, setCancelando] = useState(false);
+
   const tratarCliqueNotificacao = useCallback((notificacao) => {
     if (!notificacao) return;
     const texto = `${notificacao.titulo || ''} ${notificacao.mensagem || ''}`.toLowerCase();
     const matchReserva = texto.match(/#(\d+)/);
     const reservaId = matchReserva ? matchReserva[1] : null;
 
-    if (texto.includes('avaliação') || texto.includes('avaliacao') || texto.includes('avaliar') || texto.includes('avaliou')) {
+    if (texto.includes('avalia') || texto.includes('experiência') || texto.includes('experiencia') || notificacao.icone === 'bi-star') {
       setAbaAtiva('avaliacoes');
+      const rEncontrada = reservaId ? reservas.find(res => String(res.id) === String(reservaId)) : reservas.find(r => r.status === 'concluida' && !r.avaliacao);
+      if (rEncontrada && !rEncontrada.avaliacao) {
+        setErroAvaliacao('');
+        setModalAvaliar(rEncontrada);
+      }
     } else if (texto.includes('cupom') || texto.includes('cupons')) {
       setAbaAtiva('cupons');
     } else if (texto.includes('reserva')) {
@@ -1243,15 +1256,6 @@ function DashboardCliente() {
       }
     }
   }, [reservas]);
-
-  // Modais
-  const [modalDetalhe,  setModalDetalhe]  = useState(null);
-  const [modalCancelar, setModalCancelar] = useState(null);
-  const [modalAvaliar,  setModalAvaliar]  = useState(null);
-  const [avaliacaoEnviando, setAvaliacaoEnviando] = useState(false);
-  const [erroAvaliacao, setErroAvaliacao] = useState('');
-  const [pagandoReservaId, setPagandoReservaId] = useState(null);
-  const [cancelando, setCancelando] = useState(false);
 
   // Proteção de rota
   useEffect(() => { if (tipo !== 'hospede') navigate('/'); }, [tipo, navigate]);

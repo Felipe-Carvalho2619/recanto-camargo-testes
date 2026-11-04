@@ -1,8 +1,4 @@
 
-:root{--rc-card:#fff;--rc-header-bg:rgba(250,249,246,.96);--rc-fill:#e8e4dd;--rc-u1-text:#b34700;--rc-ok:#146c2e;--rc-ok-bg:#e8f5e9;--rc-err:#b00020;--rc-err-bg:#fce8e6;--rc-err-borda:#f3b8b3;--rc-warn:#8a4b00}
-:root[data-theme="dark"]{color-scheme:dark;--rc-bg:#141311;--rc-card:#1e1c19;--rc-ink:#f2efe9;--rc-muted:#b5afa5;--rc-line:#37332e;--rc-sh:0 1px 2px rgba(0,0,0,.45),0 10px 28px rgba(0,0,0,.4);--rc-header-bg:rgba(20,19,17,.96);--rc-fill:#2a2723;--rc-u1-text:#ff9a57;--rc-ok:#6fd08c;--rc-ok-bg:rgba(111,208,140,.14);--rc-err:#ff8a80;--rc-err-bg:rgba(255,138,128,.14);--rc-err-borda:rgba(255,138,128,.4);--rc-warn:#ffb870}
-:root[data-theme="dark"] body{background:var(--rc-bg)}
-:root{--rc-bg:#FAF9F6;--rc-card:#fff;--rc-ink:#202020;--rc-muted:#666;--rc-line:#EAE7E2;--rc-u1:#FF751F;--rc-u2:#003366;--rc-r:20px;--rc-sh:0 1px 2px rgba(32,32,32,.05),0 8px 24px rgba(32,32,32,.06);--rc-serif:'Playfair Display',Georgia,serif;--rc-sans:'Plus Jakarta Sans',system-ui,sans-serif;--rc-logo:'Oleo Script Swash Caps',cursive}
 .rc-home{font-family:var(--rc-sans);background:var(--rc-bg);color:var(--rc-ink);line-height:1.6;-webkit-font-smoothing:antialiased}
 :where(.rc-home) *{margin:0;box-sizing:border-box}
 :where(.rc-home) img{display:block;max-width:100%}
@@ -54,6 +50,7 @@
 .rc-field:hover{background:var(--rc-bg)}
 .rc-field label{display:block;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--rc-muted)}
 .rc-field select,.rc-field input{width:100%;border:0;background:none;font:600 1rem var(--rc-sans);color:var(--rc-ink);padding:2px 0;outline-offset:4px}
+.rc-field select option,.rc-res-campo select option{background-color:var(--rc-card);color:var(--rc-ink)}
 .rc-search .rc-btn{align-self:stretch;margin:2px}
 .rc-search-msg{grid-column:1/-1;padding:10px 20px 4px;font-size:.92rem;font-weight:600;display:none}
 .rc-search-msg.rc-show{display:flex;gap:8px;align-items:flex-start}

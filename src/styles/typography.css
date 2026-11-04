@@ -1,0 +1,41 @@
+/**
+ * ==============================================================================
+ * RECANTO CAMARGO — TIPOGRAFIA & BASE GLOBAL
+ * ==============================================================================
+ */
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--rc-sans);
+  background-color: var(--rc-bg);
+  color: var(--rc-ink);
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Títulos Globais ──────────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--rc-ink);
+  margin-top: 0;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+/* ── Links Globais ────────────────────────────────────────────────────────── */
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: var(--rc-trans);
+}
+
+/* ── Foco Acessível ───────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--rc-u1);
+  outline-offset: 3px;
+}

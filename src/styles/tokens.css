@@ -1,0 +1,74 @@
+/**
+ * ==============================================================================
+ * RECANTO CAMARGO — DESIGN TOKENS
+ * ==============================================================================
+ * Sistema centralizado de tokens de design.
+ * Define a paleta oficial, tipografia, raios de borda, sombras e retrocompatibilidade.
+ */
+
+:root {
+  /* ── Tipografia Oficial ─────────────────────────────────────────────────── */
+  --rc-serif: 'Playfair Display', Georgia, serif;
+  --rc-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --rc-logo: 'Oleo Script Swash Caps', cursive;
+
+  /* ── Paleta da Marca (Cores Primárias) ──────────────────────────────────── */
+  --rc-u1: #FF751F;           /* Laranja Principal da Marca */
+  --rc-u1-hover: #e56515;     /* Laranja Hover */
+  --rc-u1-text: #b34700;      /* Laranja de Alto Contraste para Texto */
+  --rc-u2: #003366;           /* Azul Escuro da Marca / Unidade 2 */
+  --rc-u2-hover: #002244;     /* Azul Hover */
+
+  /* ── Superfícies e Textos (Tema Claro — Padrão) ─────────────────────────── */
+  --rc-bg: #FAF9F6;           /* Fundo da Página (Off-white suave) */
+  --rc-card: #FFFFFF;         /* Superfície de Cards, Modais e Menus */
+  --rc-ink: #202020;          /* Texto Primário (Quase preto suave) */
+  --rc-muted: #666666;        /* Texto Secundário e Placeholders */
+  --rc-line: #EAE7E2;         /* Bordas e Divisores */
+  --rc-fill: #E8E4DD;         /* Fundos Secundários / Badges neutras */
+  --rc-header-bg: rgba(250, 249, 246, 0.96); /* Header Translúcido */
+
+  /* ── Estados Semânticos (Feedbacks) ─────────────────────────────────────── */
+  --rc-ok: #146C2E;           /* Verde Sucesso */
+  --rc-ok-bg: #E8F5E9;        /* Fundo Verde Suave */
+  --rc-ok-bd: #C8E6C9;        /* Borda Verde */
+  
+  --rc-err: #B00020;          /* Vermelho Erro */
+  --rc-err-bg: #FCE8E6;       /* Fundo Vermelho Suave */
+  --rc-err-borda: #F3B8B3;    /* Borda Vermelha */
+  
+  --rc-warn: #8A4B00;         /* Amarelo/Laranja Atenção */
+  --rc-warn-bg: #FFF3E0;      /* Fundo Atenção */
+  --rc-warn-bd: #FFE0B2;      /* Borda Atenção */
+
+  --rc-info: #004D80;         /* Azul Informativo */
+  --rc-info-bg: #E1F5FE;      /* Fundo Informativo */
+
+  /* ── Espaçamentos, Raios e Sombras ──────────────────────────────────────── */
+  --rc-r: 20px;               /* Raio Padrão de Cards */
+  --rc-r-sm: 10px;            /* Raio Pequeno (Botões/Inputs) */
+  --rc-r-lg: 32px;            /* Raio Grande (Seções/Hero) */
+  --rc-r-pill: 999px;         /* Raio Pílula */
+
+  --rc-sh: 0 1px 2px rgba(32, 32, 32, 0.05), 0 8px 24px rgba(32, 32, 32, 0.06);
+  --rc-sh-lg: 0 14px 40px rgba(0, 0, 0, 0.16);
+  --rc-sh-pop: 0 18px 50px rgba(0, 0, 0, 0.18);
+  --rc-trans: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ── Retrocompatibilidade com style.css legada ───────────────────────────── */
+  --laranja: var(--rc-u1);
+  --laranja-escuro: #ee7f01;
+  --laranja-claro: #ffad33;
+  --azul-escuro: var(--rc-u2);
+  --azul-medio: #2f4f7c;
+  --azul: #3b6399;
+  --azul-claro: #416aa3;
+  --cinza-escuro: var(--rc-ink);
+  --cinza-claro: var(--rc-line);
+  --branco: var(--rc-card);
+  --branco-transparente: rgba(255, 255, 255, 0.85);
+  --sombra-suave: var(--rc-sh);
+  --sombra-forte: var(--rc-sh-lg);
+  --sombra-btn: 0 8px 20px rgba(0, 0, 0, 0.15);
+  --transicao-padrao: var(--rc-trans);
+}

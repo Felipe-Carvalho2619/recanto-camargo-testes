@@ -1,6 +1,5 @@
 import { lazy, Suspense, useEffect } from "react";
 import { HashRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
-import "bootstrap/dist/css/bootstrap.min.css";
 import HeaderSite from "./components/home/HeaderSite";
 import Footer from "./components/footer";
 import Home from "./pages/Home";
