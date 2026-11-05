@@ -1,3 +1,18 @@
+
+const PREFIXO_REFERENCIA = 'RC_';
+
+function formatarReferenciaExterna(reservaId) {
+    return `${PREFIXO_REFERENCIA}${reservaId}`;
+}
+
+function extrairReservaIdDeReferencia(ref) {
+    if (!ref) return null;
+    const str = String(ref);
+    if (str.startsWith(PREFIXO_REFERENCIA)) {
+        return str.slice(PREFIXO_REFERENCIA.length);
+    }
+    return str;
+}
 const { MercadoPagoConfig, Preference, Payment, PaymentRefund } = require('mercadopago');
 
 function obterClienteMercadoPago() {
@@ -55,7 +70,7 @@ async function criarPreferenciaPagamento(reserva, usuario) {
             pending: `${appFrontendUrl}/DashboardCliente`
         },
         notification_url: `${appBackendUrl}/api/pagamentos/webhook`,
-        external_reference: String(reserva.Res_Id),
+        external_reference: formatarReferenciaExterna(reserva.Res_Id),
         payment_methods: {
             excluded_payment_types: [],
             installments: 12
@@ -99,7 +114,7 @@ async function buscarPagamentoPorReserva(reservaId) {
         const res = await payment.search({
             options: {
                 criteria: 'desc',
-                external_reference: String(reservaId)
+                external_reference: formatarReferenciaExterna(reservaId)
             }
         });
         if (res.results && res.results.length > 0) {
@@ -140,6 +155,8 @@ async function reembolsarPagamento(paymentId, valorEstorno = null) {
 }
 
 module.exports = {
+    formatarReferenciaExterna,
+    extrairReservaIdDeReferencia,
     criarPreferenciaPagamento,
     consultarPagamento,
     buscarPagamentoPorReserva,

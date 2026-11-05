@@ -1,5 +1,5 @@
 const db = require('../config/db');
-const { criarPreferenciaPagamento, consultarPagamento, buscarPagamentoPorReserva } = require('../services/mercadoPagoService');
+const { criarPreferenciaPagamento, consultarPagamento, buscarPagamentoPorReserva, extrairReservaIdDeReferencia } = require('../services/mercadoPagoService');
 
 /**
  * Helper para efetivar a aprovação de pagamento de uma reserva no banco
@@ -236,7 +236,7 @@ exports.consultarStatus = async (req, res) => {
         let reservaStatus = reservas[0].Res_Status;
 
         // Se ainda não estiver confirmada, verifica ativamente na API do Mercado Pago
-        if ((reservaStatus === 'PAGAMENTO_PENDENTE' || reservaStatus === 'PENDENTE') && process.env.NODE_ENV !== 'test') {
+        if (reservaStatus === 'PAGAMENTO_PENDENTE' && process.env.NODE_ENV !== 'test') {
             const pagamentoMP = await buscarPagamentoPorReserva(reservaId);
             if (pagamentoMP && pagamentoMP.status === 'approved') {
                 await efetivarAprovacaoPagamento(
@@ -298,7 +298,7 @@ exports.receberWebhook = async (req, res) => {
         const pagamentoMP = await consultarPagamento(paymentId);
         if (!pagamentoMP) return;
 
-        const reservaId = pagamentoMP.external_reference;
+        const reservaId = extrairReservaIdDeReferencia(pagamentoMP.external_reference);
         const statusMP = pagamentoMP.status;
 
         if (!reservaId) return;
