@@ -20,6 +20,7 @@ const proprietarioRoutes = require('./routes/proprietarioRoutes');
 const pagamentoRoutes = require('./routes/pagamentoRoutes');
 
 const app = express();
+app.set('trust proxy', 1);
 
 // Configurações iniciais 
 const origensPermitidas = [
