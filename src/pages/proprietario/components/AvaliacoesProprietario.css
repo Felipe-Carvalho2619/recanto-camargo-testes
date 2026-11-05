@@ -1,0 +1,201 @@
+/**
+ * ==============================================================================
+ * RECANTO CAMARGO — AVALIAÇÕES DO PROPRIETÁRIO
+ * ==============================================================================
+ */
+
+/* ── Avaliações ─────────────────────────────────────────────── */
+.avaliacoes-admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.card-avaliacao-admin {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 1.25rem;
+  background: var(--rc-card);
+  border: 1px solid var(--rc-line);
+  border-radius: 16px;
+  box-shadow: var(--rc-sh);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.card-avaliacao-admin:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--rc-sh);
+}
+
+.card-avaliacao-admin-topo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.avatar-avaliacao-admin {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--adm-blue), var(--rc-ink));
+  color: #fff;
+  font-weight: 700;
+}
+
+.badge-resposta-pendente {
+  padding: 0.28rem 0.65rem;
+  border-radius: 50px;
+  background: var(--adm-warn-bg);
+  color: var(--adm-warn-fg);
+  font-size: 0.68rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.avaliacao-admin-estrelas {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  color: var(--adm-star);
+}
+
+.comentario-avaliacao-admin {
+  flex: 1;
+  margin-bottom: 1rem;
+  color: var(--rc-muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.meta-avaliacao-admin {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--rc-line);
+  color: var(--rc-muted);
+  font-size: 0.78rem;
+}
+
+.btn-responder-avaliacao {
+  width: 100%;
+  padding: 0.62rem 1rem;
+  border: 1px solid var(--adm-blue);
+  border-radius: 10px;
+  background: var(--rc-card);
+  color: var(--adm-blue);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.btn-responder-avaliacao:hover,
+.btn-responder-avaliacao:focus-visible {
+  background: var(--adm-blue);
+  color: #fff;
+}
+
+.estado-avaliacoes-admin {
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 2rem;
+  border: 1px solid var(--rc-line);
+  border-radius: 16px;
+  background: var(--rc-card);
+  color: var(--rc-muted);
+  text-align: center;
+}
+
+.estado-avaliacoes-admin > i {
+  color: var(--rc-muted);
+  font-size: 2.25rem;
+}
+
+.estado-avaliacoes-admin h5,
+.estado-avaliacoes-admin p {
+  margin: 0;
+}
+
+.estado-avaliacoes-admin h5 {
+  color: var(--rc-ink);
+  font-weight: 700;
+}
+
+.estado-avaliacoes-admin.erro > i {
+  color: var(--adm-err-fg);
+}
+
+.avaliacao-modal-contexto {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.avaliacao-original-admin {
+  padding: 1rem;
+  border: 1px solid var(--rc-line);
+  border-radius: 12px;
+  background: var(--adm-sub);
+  color: var(--rc-muted);
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.avaliacao-nota-range {
+  accent-color: var(--rc-u1);
+}
+
+.avaliacao-contador {
+  color: var(--rc-muted);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.avaliacao-contador.limite {
+  color: var(--adm-warn-fg);
+  font-weight: 700;
+}
+
+
+/* ── Avaliações ────────────────────────────────────────────── */
+.avaliacao-admin-estrelas { color: var(--adm-star); }
+.btn-responder-avaliacao {
+  background: var(--rc-card);
+  border: 1.5px solid var(--rc-line);
+  color: var(--rc-ink);
+  border-radius: 999px;
+}
+.btn-responder-avaliacao:hover,
+.btn-responder-avaliacao:focus-visible {
+  background: var(--rc-ink);
+  border-color: var(--rc-ink);
+  color: var(--rc-bg);
+}
+.estado-avaliacoes-admin > i { color: var(--rc-muted); }
+.estado-avaliacoes-admin.erro > i { color: var(--adm-err-fg); }
+.avaliacao-original-admin { background: var(--adm-sub); border-color: var(--rc-line); color: var(--rc-ink); }
+.alerta-nota-confidencial { background: var(--adm-info-bg); border-color: var(--adm-info-bd); }
+.alerta-nota-confidencial .small { color: var(--adm-info-fg) !important; }
+
+
+/* ── Itens de lista ────────────────────────────────────────── */
+.item-checkin-card { background: var(--adm-sub); border-color: var(--rc-line); }
+.item-checkin-card:hover { background: var(--rc-card); border-color: var(--rc-muted); box-shadow: none; }
+.item-bloqueio-card { background: var(--adm-warn-bg); border-color: var(--adm-warn-bd); }
+.item-bloqueio-card:hover { background: var(--adm-warn-bg); border-color: var(--adm-warn-fg); }
+.item-reserva-mes,
+.item-proxima-entrada { background: var(--adm-sub); }

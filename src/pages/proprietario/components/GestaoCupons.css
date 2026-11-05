@@ -1,58 +1,165 @@
 /**
  * ==============================================================================
- * RECANTO CAMARGO — GESTÃO DE CUPONS DO PROPRIETÁRIO
+ * RECANTO CAMARGO — GESTÃO DE CUPONS
  * ==============================================================================
  */
 
-.cupom-card-moderno {
+/* ── Aba Cupons & Cards Modernos ────────────────────────────── */
+.cupons-grid-admin {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.25rem;
+}
+
+.card-cupom-moderno {
   background: var(--rc-card);
   border: 1px solid var(--rc-line);
-  border-radius: 16px;
-  padding: 1.25rem;
+  border-radius: 18px;
+  padding: 1.4rem;
+  position: relative;
   box-shadow: var(--rc-sh);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  transition: var(--rc-trans);
+  justify-content: space-between;
 }
 
-.cupom-card-moderno:hover {
-  border-color: var(--rc-u1);
+.card-cupom-moderno:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--rc-sh);
 }
 
-.cupom-codigo-badge {
-  font-family: monospace;
-  font-size: 1.1rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  background: var(--rc-fill);
-  color: var(--rc-ink);
-  padding: 0.3rem 0.75rem;
-  border-radius: 8px;
-  display: inline-block;
-  border: 1px dashed var(--rc-line);
+.card-cupom-moderno.inativo {
+  opacity: 0.65;
+  background: var(--adm-sub);
+  filter: grayscale(0.2);
 }
 
 .cupom-valor-destaque {
-  font-family: var(--rc-serif);
   font-size: 1.75rem;
-  font-weight: 700;
-  color: var(--rc-u1-text);
-  line-height: 1.2;
+  font-weight: 800;
+  color: var(--rc-u1);
+  line-height: 1.1;
+}
+
+.cupom-codigo-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--rc-line);
+  border: 1px dashed var(--rc-line);
+  border-radius: 10px;
+  padding: 0.5rem 0.85rem;
+  margin: 1rem 0;
+}
+
+.cupom-codigo-texto {
+  font-family: monospace;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--rc-ink);
+  letter-spacing: 0.08em;
 }
 
 .btn-copiar-cupom {
   background: var(--rc-card);
   border: 1px solid var(--rc-line);
-  color: var(--rc-ink);
-  border-radius: var(--rc-r-pill, 999px);
-  padding: 0.35rem 0.75rem;
-  font-size: 0.8rem;
+  color: var(--rc-muted);
+  border-radius: 6px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.75rem;
   font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
   cursor: pointer;
-  transition: var(--rc-trans);
+  transition: all 0.15s ease;
 }
 
 .btn-copiar-cupom:hover {
-  background: var(--rc-fill);
+  background: var(--rc-ink);
+  color: #ffffff;
+  border-color: var(--rc-ink);
 }
+
+/* Badges de Público-Alvo */
+.badge-publico-todos {
+  background: var(--adm-info-bg);
+  color: var(--adm-info-fg);
+  border: 1px solid var(--adm-info-bd);
+  padding: 0.28rem 0.65rem;
+  border-radius: 50px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.badge-publico-primeira {
+  background: var(--adm-info-bg);
+  color: var(--adm-info-fg);
+  border: 1px solid var(--adm-info-bd);
+  padding: 0.28rem 0.65rem;
+  border-radius: 50px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.badge-publico-retornante {
+  background: var(--adm-warn-bg);
+  color: var(--adm-warn-fg);
+  border: 1px solid var(--adm-warn-bd);
+  padding: 0.28rem 0.65rem;
+  border-radius: 50px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.badge-publico-recorrente {
+  background: var(--adm-warn-bg);
+  color: var(--adm-warn-fg);
+  border: 1px solid var(--adm-warn-bd);
+  padding: 0.28rem 0.65rem;
+  border-radius: 50px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.badge-publico-especifico {
+  background: var(--adm-pur-bg);
+  color: var(--adm-pur-fg);
+  border: 1px solid var(--adm-pur-bd);
+  padding: 0.28rem 0.65rem;
+  border-radius: 50px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.switch-cupom-input {
+  cursor: pointer;
+  width: 2.5rem !important;
+  height: 1.3rem !important;
+}
+
+.switch-cupom-input:checked {
+  background-color: var(--rc-ink) !important;
+  border-color: var(--rc-ink) !important;
+}
+
+
+/* ── Modal Criar Cupom: Sugestões de Hóspede ── */
+.btn-sugestao-hospede {
+  transition: background-color 0.15s ease-in-out;
+}
+
+.btn-sugestao-hospede:hover {
+  background-color: var(--rc-line) !important;
+}
+
+
+
+
+/* ── Cupons ────────────────────────────────────────────────── */
+.card-cupom-moderno.inativo { background: var(--adm-sub); }
+.cupom-codigo-box { background: var(--adm-sub); border-color: var(--rc-muted); }
+.btn-copiar-cupom { background: var(--rc-card); border-color: var(--rc-line); color: var(--rc-ink); border-radius: 999px; }
+.btn-copiar-cupom:hover { background: var(--rc-ink); color: var(--rc-bg); border-color: var(--rc-ink); }
+.btn-sugestao-hospede:hover { background-color: var(--rc-fill) !important; }

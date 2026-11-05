@@ -1,48 +1,357 @@
 /**
  * ==============================================================================
- * RECANTO CAMARGO — KPIS E GRÁFICOS DO PROPRIETÁRIO
+ * RECANTO CAMARGO — KPIS, GRÁFICOS & PREVISÃO DE RECEITA
  * ==============================================================================
  */
 
-.kpi-grid-moderno {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1.25rem;
-  margin-bottom: 2rem;
+/* ── Previsão de Receita ───────────────────────────────────── */
+.previsao-wrapper { display:flex; flex-direction:column; gap:0; }
+
+.card-previsao-mini {
+  background:var(--rc-card);
+  border-radius:16px;
+  padding:1.25rem 1.4rem;
+  display:flex;
+  align-items:center;
+  gap:1rem;
+  box-shadow:0 2px 12px rgba(0,0,0,0.06);
+  transition:transform 0.2s, box-shadow 0.2s;
+  height:100%;
+}
+.card-previsao-mini:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,0.1); }
+.card-previsao-icone { width:44px; height:44px; border-radius:12px; display:grid; place-items:center; flex-shrink:0; }
+.card-previsao-valor { font-size:1.5rem; font-weight:800; color:var(--rc-ink); line-height:1.1; }
+.card-previsao-label { font-size:0.78rem; color:var(--rc-muted); font-weight:600; margin-top:2px; }
+
+/* Gráfico CSS puro */
+.grafico-wrapper-admin {
+  background:var(--rc-card);
+  border-radius:16px;
+  padding:1.5rem;
+  box-shadow:0 2px 12px rgba(0,0,0,0.06);
+  margin-top:1rem;
+}
+.grafico-header-admin { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; flex-wrap:wrap; gap:0.75rem; }
+.legenda-grafico { display:flex; gap:1rem; align-items:center; flex-wrap:wrap; }
+
+.grafico-barras {
+  display:flex;
+  align-items:stretch;
+  justify-content:space-around;
+  gap:1rem;
+  height:220px;
+  padding-bottom:0.25rem;
 }
 
-.kpi-card-moderno {
+.grafico-coluna {
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+  align-items:center;
+  gap:0.5rem;
+  flex:1;
+  max-width:100px;
+}
+
+.grafico-valor-topo {
+  font-size:0.68rem;
+  font-weight:700;
+  color:var(--rc-muted);
+  text-align:center;
+  white-space:nowrap;
+  min-height:1.2em;
+}
+
+.grafico-barra-container {
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  width:100%;
+  flex:1;
+}
+
+.grafico-barra-stack {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-end;
+  width:52px;
+  height:100%;
+  gap:2px;
+}
+
+.grafico-barra {
+  width:100%;
+  border-radius:6px 6px 0 0;
+  min-height:4px;
+  transition:height 0.5s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+
+.grafico-barra.confirmada {
+  background: linear-gradient(180deg, var(--adm-blue) 0%, var(--rc-ink) 100%);
+  border-radius: 6px 6px 0 0;
+}
+
+.grafico-barra.potencial {
+  background: linear-gradient(180deg, var(--adm-star) 0%, var(--adm-star) 100%);
+  border-radius: 6px 6px 0 0;
+}
+
+.grafico-label-mes {
+  font-size:0.78rem;
+  font-weight:700;
+  color:var(--rc-muted);
+  text-transform:capitalize;
+}
+
+/* Próximas entradas */
+.proximas-entradas-wrapper {
+  background:var(--rc-card);
+  border-radius:16px;
+  padding:1.5rem;
+  box-shadow:0 2px 12px rgba(0,0,0,0.06);
+}
+
+.item-proxima-entrada {
+  display:flex;
+  align-items:center;
+  gap:0.75rem;
+  padding:0.75rem 0.85rem;
+  border-radius:10px;
+  background:var(--adm-sub);
+  margin-bottom:0.45rem;
+  transition:background 0.15s;
+}
+.item-proxima-entrada:hover { background:var(--adm-sub2); }
+.item-proxima-entrada:last-child { margin-bottom:0; }
+
+.dias-ate-badge {
+  display:inline-block;
+  background:var(--adm-sub2);
+  color:var(--adm-blue);
+  font-size:0.7rem;
+  font-weight:700;
+  padding:2px 8px;
+  border-radius:50px;
+  margin-bottom:3px;
+  text-align:center;
+}
+
+
+/* ─── Painel do Administrador: Estilos Modernizados ──────────── */
+
+/* ── KPI Cards Modernos ─────────────────────────────────────── */
+.card-kpi-moderno {
   background: var(--rc-card);
-  border: 1px solid var(--rc-line);
-  border-radius: 16px;
-  padding: 1.25rem;
-  box-shadow: var(--rc-sh);
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  border-radius: 18px !important;
+  border: 1px solid var(--rc-line) !important;
+  box-shadow: var(--rc-sh) !important;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.card-kpi-moderno:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--rc-sh) !important;
 }
 
 .titulo-kpi-moderno {
-  font-size: 0.75rem;
+  font-size: 0.82rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
   color: var(--rc-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.icone-kpi-moderno {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  font-size: 1.25rem;
 }
 
 .valor-kpi-moderno {
-  font-family: var(--rc-serif);
-  font-size: 2rem;
-  font-weight: 700;
+  font-size: 1.85rem;
+  font-weight: 800;
   color: var(--rc-ink);
   line-height: 1.1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.dash-section-label {
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+.sub-kpi-moderno {
+  font-size: 0.78rem;
   color: var(--rc-muted);
-  margin-bottom: 0.75rem;
+  font-weight: 500;
 }
+
+.barra-progresso-kpi {
+  width: 100%;
+  height: 7px;
+  background: var(--rc-line);
+  border-radius: 50px;
+  overflow: hidden;
+}
+
+.barra-progresso-kpi-fill {
+  height: 100%;
+  border-radius: 50px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.kpi-badge-variacao {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.6rem;
+  border-radius: 50px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.kpi-badge-variacao.positiva {
+  background: var(--adm-ok-bg);
+  color: var(--adm-ok-fg);
+  border: 1px solid var(--adm-ok-bd);
+}
+
+.kpi-badge-variacao.negativa {
+  background: var(--adm-err-bg);
+  color: var(--adm-err-fg);
+  border: 1px solid var(--adm-err-bd);
+}
+
+.kpi-badge-variacao.neutra {
+  background: var(--rc-line);
+  color: var(--rc-muted);
+  border: 1px solid var(--rc-line);
+}
+
+/* ── Gráfico SVG Moderno de Faturamento ─────────────────────── */
+.card-grafico-svg {
+  background: var(--rc-card);
+  border-radius: 18px;
+  border: 1px solid var(--rc-line);
+  box-shadow: var(--rc-sh);
+}
+
+.badge-total-6m {
+  background: var(--adm-warn-bg);
+  border: 1px solid var(--adm-warn-bd);
+  color: var(--adm-warn-fg);
+  padding: 0.35rem 0.85rem;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.grafico-svg-container {
+  min-height: 210px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.grafico-tooltip-flutuante {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  background: var(--rc-ink);
+  color: #ffffff;
+  font-size: 0.78rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 10;
+  box-shadow: var(--rc-sh);
+  animation: fadeInTooltip 0.15s ease-in-out;
+}
+
+.grafico-tooltip-flutuante::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: var(--rc-ink) transparent transparent transparent;
+}
+
+@keyframes fadeInTooltip {
+  from { opacity: 0; transform: translate(-50%, -90%); }
+  to { opacity: 1; transform: translate(-50%, -100%); }
+}
+
+/* ── Card de Próximos Check-ins & WhatsApp ──────────────────── */
+.card-checkins-admin {
+  background: var(--rc-card);
+  border-radius: 18px;
+  border: 1px solid var(--rc-line);
+  box-shadow: var(--rc-sh);
+}
+
+.item-checkin-card {
+  background: var(--adm-sub);
+  border: 1px solid var(--rc-line);
+  border-radius: 14px;
+  transition: background 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
+}
+
+.item-checkin-card:hover {
+  background: var(--rc-card);
+  border-color: var(--rc-line);
+  transform: translateY(-2px);
+  box-shadow: var(--rc-sh);
+}
+
+.avatar-checkin {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--rc-ink) 0%, var(--adm-blue) 100%);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1.15rem;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  box-shadow: var(--rc-sh);
+}
+
+.btn-whatsapp-checkin {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: var(--adm-wa);
+  color: #ffffff !important;
+  font-weight: 700;
+  font-size: 0.82rem;
+  padding: 0.5rem 0.95rem;
+  border-radius: 50px;
+  text-decoration: none !important;
+  transition: all 0.2s ease;
+  box-shadow: 0 3px 10px rgba(37, 211, 102, 0.25);
+  border: none;
+}
+
+.btn-whatsapp-checkin:hover {
+  background: var(--adm-wa-h);
+  transform: translateY(-1px);
+  box-shadow: 0 5px 15px rgba(37, 211, 102, 0.35);
+}
+
+
+/* ── Gráficos ──────────────────────────────────────────────── */
+.grafico-barra.confirmada { background: var(--adm-blue); }
+.grafico-barra.potencial { background: var(--adm-star); }
+.grafico-tooltip-flutuante { background: var(--rc-ink); color: var(--rc-bg); }
+.grafico-tooltip-flutuante::after { border-color: var(--rc-ink) transparent transparent transparent; }
+.barra-progresso-kpi { background: var(--rc-fill); }
+
+.btn-whatsapp-checkin { background: var(--adm-wa); color: #fff !important; box-shadow: none; }
+.btn-whatsapp-checkin:hover { background: var(--adm-wa-h); box-shadow: none; }

@@ -18,6 +18,7 @@ import './components/GestaoDiarias.css';
 import './components/GestaoCupons.css';
 import './components/ModaisDecisao.css';
 import './components/KpisGraficos.css';
+import './components/AvaliacoesProprietario.css';
 
 // ─── Constantes & Utilitários ────────────────────────────────────────────────
 

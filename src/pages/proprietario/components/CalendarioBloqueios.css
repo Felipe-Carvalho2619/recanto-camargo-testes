@@ -1,41 +1,302 @@
 /**
  * ==============================================================================
- * RECANTO CAMARGO — CALENDÁRIO ADMINISTRATIVO & BLOQUEIOS
+ * RECANTO CAMARGO — CALENDÁRIO & BLOQUEIOS DO PROPRIETÁRIO
  * ==============================================================================
  */
 
-.calendario-wrapper-admin {
+/* ── Calendário ────────────────────────────────────────────── */
+.calendario-wrapper-admin { background:var(--rc-card); border-radius:16px; box-shadow:0 2px 12px rgba(0,0,0,0.06); padding:1.5rem; }
+.calendario-header-admin { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem; flex-wrap:wrap; gap:0.75rem; }
+.legenda-calendario { display:flex; gap:1rem; align-items:center; }
+.legenda-item { display:flex; align-items:center; gap:0.4rem; font-size:0.78rem; color:var(--rc-muted); font-weight:600; }
+.dot { width:11px; height:11px; border-radius:50%; flex-shrink:0; }
+.dot-aprovada { background:var(--adm-ok-fg); }
+.dot-pendente  { background:var(--adm-star); }
+
+.react-calendar-container { display:flex; justify-content:center; }
+
+.calendario-admin-custom {
+  width:100%; max-width:480px;
+  border:1px solid var(--rc-line) !important;
+  border-radius:14px !important;
+  padding:0.75rem;
+  font-family:inherit !important;
+}
+.calendario-admin-custom .react-calendar__navigation button { border-radius:8px; font-weight:700; color:var(--rc-ink); font-size:0.9rem; min-width:36px; }
+.calendario-admin-custom .react-calendar__navigation button:enabled:hover,
+.calendario-admin-custom .react-calendar__navigation button:enabled:focus { background:var(--adm-sub2); }
+.calendario-admin-custom .react-calendar__toolbar-label,
+.calendario-admin-custom .react-calendar__navigation__label { font-weight:700; color:var(--rc-ink); }
+.calendario-admin-custom .react-calendar__month-view__weekdays__weekday { font-size:0.7rem; font-weight:700; color:var(--rc-muted); text-transform:uppercase; letter-spacing:0.05em; padding:0.35rem 0; }
+.calendario-admin-custom .react-calendar__month-view__weekdays__weekday abbr { text-decoration:none; }
+.calendario-admin-custom .react-calendar__tile { border-radius:8px; font-size:0.82rem; font-weight:500; padding:0.5rem 0.3rem; transition:background 0.15s; }
+.calendario-admin-custom .react-calendar__tile:enabled:hover { background:var(--adm-sub2); }
+.calendario-admin-custom .react-calendar__tile--now { background:var(--adm-sub2) !important; color:var(--rc-ink); font-weight:700; }
+.calendario-admin-custom .react-calendar__tile--active,
+.calendario-admin-custom .react-calendar__tile--active:enabled:hover { background:var(--rc-ink) !important; color:#fff !important; border-radius:8px; }
+.calendario-admin-custom .dia-aprovado { background:var(--adm-ok-bg) !important; color:var(--adm-ok-fg) !important; font-weight:700; }
+.calendario-admin-custom .dia-aprovado:enabled:hover { background:var(--adm-ok-bd) !important; }
+.calendario-admin-custom .dia-pendente { background:var(--adm-warn-bg) !important; color:var(--adm-warn-fg) !important; font-weight:700; }
+.calendario-admin-custom .dia-pendente:enabled:hover { background:var(--adm-warn-bd) !important; }
+
+.reservas-mes-lista { border-top:1px solid var(--rc-line); padding-top:1.25rem; }
+.label-lista-mes { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--rc-muted); margin-bottom:0.85rem; }
+.item-reserva-mes { display:flex; align-items:center; gap:0.75rem; padding:0.65rem 0.85rem; border-radius:10px; background:var(--adm-sub); margin-bottom:0.45rem; transition:background 0.15s; }
+.item-reserva-mes:hover { background:var(--adm-sub2); }
+.dot-inline { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+
+
+/* ── Calendário Duplo & Hachura de Manutenção ────────────────── */
+.calendario-duplo-wrapper {
   background: var(--rc-card);
-  border: 1px solid var(--rc-line);
-  border-radius: 16px;
+  border-radius: 18px;
+  padding: 1.75rem;
   box-shadow: var(--rc-sh);
-  padding: 1.5rem;
-  margin-bottom: 2rem;
+  border: 1px solid var(--rc-line);
+}
+
+.calendario-duplo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.75rem;
+}
+
+@media (max-width: 991px) {
+  .calendario-duplo-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.calendario-mes-coluna {
+  display: flex;
+  flex-direction: column;
 }
 
 .calendario-mes-titulo {
-  font-family: var(--rc-serif);
-  font-weight: 600;
-  font-size: 1.15rem;
+  font-size: 1rem;
+  font-weight: 700;
   color: var(--rc-ink);
-  border-bottom: 1px solid var(--rc-line);
+  text-transform: capitalize;
+  text-align: center;
+  margin-bottom: 0.75rem;
   padding-bottom: 0.5rem;
-  margin-bottom: 1rem;
+  border-bottom: 2px solid var(--rc-line);
 }
 
-.item-checkin-card {
-  background: var(--rc-bg);
-  border: 1px solid var(--rc-line);
-  border-radius: 14px;
-  padding: 1rem;
+/* Hachura listrada amarela/âmbar para dias bloqueados integrais */
+.calendario-admin-custom .dia-bloqueado-manutencao {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--adm-warn-bg),
+    var(--adm-warn-bg) 6px,
+    var(--adm-warn-bd) 6px,
+    var(--adm-warn-bd) 12px
+  ) !important;
+  color: var(--adm-warn-fg) !important;
+  font-weight: 700 !important;
+  border: 1px solid var(--adm-warn-bd) !important;
+  border-radius: 8px !important;
+  position: relative;
+}
+
+.calendario-admin-custom .react-calendar__tile abbr {
+  position: relative;
+  z-index: 2;
+}
+
+/* ─── Dias com Divisão de Metade (Check-out de manhã / Check-in de tarde) ─── */
+
+/* 1. Reserva Aprovada (manhã) + Bloqueio Manual (tarde) */
+.calendario-admin-custom .dia-split-reserva-bloqueio {
+  background: linear-gradient(to right, var(--adm-ok-bg) 50%, var(--adm-warn-bd) 50%) !important;
+  color: var(--adm-ok-fg) !important;
+  font-weight: 700 !important;
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px !important;
+}
+.calendario-admin-custom .dia-split-reserva-bloqueio::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 50%;
+  background: repeating-linear-gradient(-45deg, transparent, transparent 3px, rgba(245, 158, 11, 0.4) 3px, rgba(245, 158, 11, 0.4) 6px);
+  pointer-events: none;
+}
+
+/* 2. Bloqueio Manual (manhã) + Reserva Aprovada (tarde) */
+.calendario-admin-custom .dia-split-bloqueio-reserva {
+  background: linear-gradient(to right, var(--adm-warn-bd) 50%, var(--adm-ok-bg) 50%) !important;
+  color: var(--adm-ok-fg) !important;
+  font-weight: 700 !important;
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px !important;
+}
+.calendario-admin-custom .dia-split-bloqueio-reserva::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 50%;
+  background: repeating-linear-gradient(-45deg, transparent, transparent 3px, rgba(245, 158, 11, 0.4) 3px, rgba(245, 158, 11, 0.4) 6px);
+  pointer-events: none;
+}
+
+/* 3. Reserva Aprovada (manhã - check-out) + Livre (tarde) */
+.calendario-admin-custom .dia-split-reserva-livre {
+  background: linear-gradient(to right, var(--adm-ok-bg) 50%, transparent 50%) !important;
+  color: var(--adm-ok-fg) !important;
+  font-weight: 700 !important;
+  border-radius: 8px !important;
+}
+
+/* 4. Livre (manhã) + Reserva Aprovada (tarde - check-in) */
+.calendario-admin-custom .dia-split-livre-reserva {
+  background: linear-gradient(to right, transparent 50%, var(--adm-ok-bg) 50%) !important;
+  color: var(--adm-ok-fg) !important;
+  font-weight: 700 !important;
+  border-radius: 8px !important;
+}
+
+/* 5. Bloqueio Manual (manhã - fim) + Livre (tarde) */
+.calendario-admin-custom .dia-split-bloqueio-livre {
+  background: linear-gradient(to right, var(--adm-warn-bd) 50%, transparent 50%) !important;
+  color: var(--adm-warn-fg) !important;
+  font-weight: 700 !important;
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px !important;
+}
+.calendario-admin-custom .dia-split-bloqueio-livre::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 50%;
+  background: repeating-linear-gradient(-45deg, transparent, transparent 3px, rgba(245, 158, 11, 0.4) 3px, rgba(245, 158, 11, 0.4) 6px);
+  pointer-events: none;
+}
+
+/* 6. Livre (manhã) + Bloqueio Manual (tarde - início) */
+.calendario-admin-custom .dia-split-livre-bloqueio {
+  background: linear-gradient(to right, transparent 50%, var(--adm-warn-bd) 50%) !important;
+  color: var(--adm-warn-fg) !important;
+  font-weight: 700 !important;
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px !important;
+}
+.calendario-admin-custom .dia-split-livre-bloqueio::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 50%;
+  background: repeating-linear-gradient(-45deg, transparent, transparent 3px, rgba(245, 158, 11, 0.4) 3px, rgba(245, 158, 11, 0.4) 6px);
+  pointer-events: none;
+}
+
+/* 7. Reserva Pendente splits */
+.calendario-admin-custom .dia-split-pendente-bloqueio {
+  background: linear-gradient(to right, var(--adm-warn-bg) 50%, var(--adm-warn-bd) 50%) !important;
+  color: var(--adm-warn-fg) !important;
+  font-weight: 700 !important;
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px !important;
+}
+.calendario-admin-custom .dia-split-bloqueio-pendente {
+  background: linear-gradient(to right, var(--adm-warn-bd) 50%, var(--adm-warn-bg) 50%) !important;
+  color: var(--adm-warn-fg) !important;
+  font-weight: 700 !important;
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px !important;
+}
+.calendario-admin-custom .dia-split-pendente-livre {
+  background: linear-gradient(to right, var(--adm-warn-bg) 50%, transparent 50%) !important;
+  color: var(--adm-warn-fg) !important;
+  font-weight: 700 !important;
+  border-radius: 8px !important;
+}
+.calendario-admin-custom .dia-split-livre-pendente {
+  background: linear-gradient(to right, transparent 50%, var(--adm-warn-bg) 50%) !important;
+  color: var(--adm-warn-fg) !important;
+  font-weight: 700 !important;
+  border-radius: 8px !important;
+}
+
+/* 8. Reserva Aprovada (manhã) + Reserva Pendente (tarde) */
+.calendario-admin-custom .dia-split-reserva-pendente {
+  background: linear-gradient(to right, var(--adm-ok-bg) 50%, var(--adm-warn-bg) 50%) !important;
+  color: var(--adm-ok-fg) !important;
+  font-weight: 700 !important;
+  border-radius: 8px !important;
+}
+
+/* 9. Reserva Pendente (manhã) + Reserva Aprovada (tarde) */
+.calendario-admin-custom .dia-split-pendente-reserva {
+  background: linear-gradient(to right, var(--adm-warn-bg) 50%, var(--adm-ok-bg) 50%) !important;
+  color: var(--adm-ok-fg) !important;
+  font-weight: 700 !important;
+  border-radius: 8px !important;
+}
+
+.dot-bloqueado {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--adm-star),
+    var(--adm-star) 3px,
+    var(--adm-warn-bd) 3px,
+    var(--adm-warn-bd) 6px
+  );
+  border: 1px solid var(--adm-star);
+}
+
+.lista-bloqueios-wrapper {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--rc-line);
+}
+
+.item-bloqueio-card {
+  background: var(--adm-warn-bg);
+  border: 1px solid var(--adm-warn-bg);
+  border-radius: 12px;
+  padding: 0.85rem 1.15rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  transition: var(--rc-trans);
+  flex-wrap: wrap;
+  transition: all 0.18s ease;
 }
 
-.item-checkin-card:hover {
-  background: var(--rc-card);
-  border-color: var(--rc-muted);
+.item-bloqueio-card:hover {
+  background: var(--adm-warn-bg);
+  border-color: var(--adm-warn-bd);
 }
+
+
+/* ── Calendário do proprietário (react-calendar) ───────────── */
+.calendario-admin-custom.react-calendar {
+  background: transparent;
+  color: var(--rc-ink);
+  border: 1px solid var(--rc-line) !important;
+  border-radius: 16px !important;
+}
+.calendario-admin-custom .react-calendar__tile { background: none; color: var(--rc-ink); }
+.calendario-admin-custom .react-calendar__tile:enabled:hover,
+.calendario-admin-custom .react-calendar__tile:enabled:focus { background: var(--rc-fill); }
+.calendario-admin-custom .react-calendar__tile:disabled { background: var(--adm-sub); color: var(--rc-muted); }
+.calendario-admin-custom .react-calendar__month-view__days__day--neighboringMonth { color: var(--rc-muted); opacity: 0.6; }
+.calendario-admin-custom .react-calendar__month-view__days__day--weekend { color: var(--adm-err-fg); }
+.calendario-admin-custom .react-calendar__month-view__days__day--neighboringMonth.react-calendar__month-view__days__day--weekend { color: var(--rc-muted); }
+.calendario-admin-custom .react-calendar__tile--now { background: var(--adm-info-bg) !important; color: var(--adm-info-fg); }
+.calendario-admin-custom .react-calendar__tile--active,
+.calendario-admin-custom .react-calendar__tile--active:enabled:hover { background: var(--rc-ink) !important; color: var(--rc-bg) !important; }
+.calendario-admin-custom .dia-aprovado,
+.calendario-admin-custom .dia-aprovado:enabled:hover { color: var(--adm-ok-fg) !important; }
+.calendario-admin-custom .dia-aprovado { background: var(--adm-ok-bg) !important; }
+.calendario-admin-custom .dia-aprovado:enabled:hover { background: var(--adm-ok-bd) !important; }
+.calendario-admin-custom .dia-pendente { background: var(--adm-warn-bg) !important; color: var(--adm-warn-fg) !important; }
+.calendario-admin-custom .dia-pendente:enabled:hover { background: var(--adm-warn-bd) !important; }
+.calendario-mes-titulo { font-family: var(--rc-serif); font-weight: 600; font-size: 1.15rem; border-bottom: 1px solid var(--rc-line); text-transform: none; }
+.calendario-mes-titulo::first-letter { text-transform: uppercase; }
+.dot-aprovada { background: var(--adm-ok-fg); }
+.dot-pendente { background: var(--adm-star); }
+.legenda-calendario { background: var(--adm-sub) !important; border: 1px solid var(--rc-line); }

@@ -4,146 +4,284 @@
  * ==============================================================================
  */
 
+/* ── Tabela ────────────────────────────────────────────────── */
 .tabela-wrapper-admin {
   background: var(--rc-card);
-  border: 1px solid var(--rc-line);
-  border-radius: var(--rc-r, 18px);
-  box-shadow: var(--rc-sh);
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
   overflow: hidden;
-  margin-bottom: 2rem;
 }
-
 .tabela-header-admin {
-  padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid var(--rc-line);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 1.1rem 1.4rem;
+  border-bottom: 1px solid var(--rc-line);
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 0.75rem;
 }
-
-.filtros-status-admin {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
+.filtros-status-admin { display:flex; gap:0.4rem; flex-wrap:wrap; }
 
 .filtro-btn-admin {
-  background: var(--rc-fill);
-  border: 1px solid transparent;
-  color: var(--rc-ink);
-  font-size: 0.825rem;
-  font-weight: 600;
-  padding: 0.4rem 0.85rem;
-  border-radius: var(--rc-r-pill, 999px);
-  cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  transition: var(--rc-trans);
+  gap: 0.35rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 50px;
+  border: 1px solid var(--rc-line);
+  background: var(--adm-sub);
+  color: var(--rc-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
 }
-
-.filtro-btn-admin:hover {
-  background: var(--rc-line);
-}
-
-.filtro-btn-admin.ativo {
-  background: var(--rc-u1);
-  color: #1a0b00;
-  font-weight: 700;
-}
+.filtro-btn-admin:hover { background: var(--adm-sub2); }
+.filtro-btn-admin.ativo { background:var(--rc-ink); border-color:var(--rc-ink); color:#fff; }
 
 .filtro-count {
-  background: rgba(0, 0, 0, 0.12);
-  border-radius: var(--rc-r-pill, 999px);
+  background: rgba(255,255,255,0.22);
+  border-radius: 50px;
   padding: 1px 6px;
-  font-size: 0.725rem;
+  font-size: 0.7rem;
 }
+.filtro-btn-admin:not(.ativo) .filtro-count { background:var(--rc-line); color:var(--rc-muted); }
 
-:root[data-theme="dark"] .filtro-count {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.tabela-admin {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-}
-
+.tabela-admin { width:100%; border-collapse:collapse; }
+.tabela-admin thead tr { background:var(--adm-sub); }
 .tabela-admin th {
-  padding: 0.85rem 1.25rem;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--rc-muted);
-  border-bottom: 1px solid var(--rc-line);
-  background: var(--rc-bg);
+  padding: 0.8rem 1rem;
+  font-size: 0.7rem; font-weight:700;
+  text-transform:uppercase; letter-spacing:0.06em;
+  color:var(--rc-muted); border-bottom:1px solid var(--rc-line);
+  white-space: nowrap;
 }
-
 .tabela-admin td {
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--rc-line);
-  color: var(--rc-ink);
-  vertical-align: middle;
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid var(--adm-sub);
+  vertical-align: middle; color:var(--rc-ink);
 }
+.linha-tabela-admin:hover td { background:var(--adm-sub); }
+.linha-tabela-admin:last-child td { border-bottom:none; }
 
-.linha-tabela-admin {
-  transition: background 0.15s;
-}
-
-.linha-tabela-admin:hover {
-  background: var(--rc-fill);
-}
-
-.id-reserva {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--rc-muted);
-  font-family: monospace;
-}
-
+.id-reserva { font-size:0.75rem; font-weight:700; color:var(--rc-muted); font-family:monospace; }
 .mini-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--rc-u1);
-  color: #1a0b00;
-  display: grid;
-  place-items: center;
-  font-weight: 700;
-  font-size: 0.85rem;
+  width:30px; height:30px; border-radius:50%;
+  background: linear-gradient(135deg,var(--adm-blue),var(--adm-blue));
+  color:#fff; font-weight:700; font-size:0.8rem;
+  display:grid; place-items:center; flex-shrink:0;
 }
+.badge-status-admin { padding:0.28rem 0.7rem; border-radius:50px; font-size:0.72rem; font-weight:700; white-space:nowrap; }
 
-/* ── Paginação ────────────────────────────────────────────────────────────── */
+.acoes-tabela { display:flex; align-items:center; gap:0.35rem; }
+.btn-acao-tabela {
+  width:30px; height:30px; border-radius:8px;
+  border:none; display:grid; place-items:center;
+  cursor:pointer; transition:all 0.18s; font-size:0.82rem;
+}
+.btn-acao-tabela.ver     { background:var(--adm-sub2); color:var(--adm-blue); }
+.btn-acao-tabela.ver:hover     { background:var(--adm-blue); color:#fff; }
+.btn-acao-tabela.aprovar { background:var(--adm-ok-bg); color:var(--adm-ok-fg); }
+.btn-acao-tabela.aprovar:hover { background:var(--adm-ok-fg); color:#fff; }
+.btn-acao-tabela.recusar { background:var(--adm-err-bg); color:var(--adm-err-fg); }
+.btn-acao-tabela.recusar:hover { background:var(--adm-err-fg); color:#fff; }
+
+
+/* ─── Paginação ────────────────────────────────────────────── */
 .paginacao-admin {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 1.5rem;
+  padding: 1rem 1.4rem;
   border-top: 1px solid var(--rc-line);
-  flex-wrap: wrap;
   gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.btn-paginacao {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--rc-line);
+  background: var(--rc-card);
+  color: var(--rc-muted);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.btn-paginacao:hover:not(:disabled) {
+  background: var(--adm-sub);
+  border-color: var(--rc-line);
+}
+
+.btn-paginacao:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.paginacao-numeros {
+  display: flex;
+  gap: 0.3rem;
 }
 
 .btn-numero-pagina {
-  background: var(--rc-card);
-  border: 1px solid var(--rc-line);
-  color: var(--rc-ink);
-  border-radius: var(--rc-r-pill, 999px);
-  min-width: 36px;
+  width: 36px;
   height: 36px;
-  display: inline-grid;
-  place-items: center;
+  border: 1px solid var(--rc-line);
+  background: var(--rc-card);
+  color: var(--rc-muted);
+  border-radius: 8px;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  transition: var(--rc-trans);
+  transition: all 0.18s ease;
 }
 
-.btn-numero-pagina:hover,
-.btn-numero-pagina.ativo {
-  background: var(--rc-u1);
-  color: #1a0b00;
-  border-color: var(--rc-u1);
+.btn-numero-pagina:hover {
+  background: var(--adm-sub);
 }
+
+.btn-numero-pagina.ativo {
+  background: var(--rc-ink);
+  border-color: var(--rc-ink);
+  color: #fff;
+}
+
+.paginacao-info {
+  font-size: 0.8rem;
+  color: var(--rc-muted);
+  font-weight: 500;
+}
+
+.btn-ver-todas {
+  border-radius: 50px !important;
+  font-weight: 600 !important;
+  padding: 0.4rem 1rem !important;
+  border-color: var(--adm-blue) !important;
+  color: var(--adm-blue) !important;
+  background: transparent !important;
+  transition: all 0.2s ease !important;
+}
+
+.btn-ver-todas:hover {
+  background: var(--adm-blue) !important;
+  color: #fff !important;
+}
+
+@media (max-width: 768px) {
+  .paginacao-admin {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .paginacao-numeros {
+    justify-content: center;
+  }
+  .paginacao-info {
+    text-align: center;
+  }
+}
+.btn-bloquear-datas-admin {
+  background-color: var(--rc-u1);
+  border-color: var(--rc-u1);
+  color: #ffffff;
+}
+.btn-bloquear-datas-admin:hover,
+.btn-bloquear-datas-admin:focus {
+  background-color: var(--rc-u1);
+  border-color: var(--rc-u1);
+  color: #ffffff;
+}
+
+
+/* ── Cartões e tabela ──────────────────────────────────────── */
+.card-kpi-moderno,
+.card-grafico-svg,
+.card-checkins-admin,
+.card-previsao-mini,
+.grafico-wrapper-admin,
+.proximas-entradas-wrapper,
+.tabela-wrapper-admin,
+.calendario-wrapper-admin,
+.calendario-duplo-wrapper,
+.card-avaliacao-admin,
+.card-cupom-moderno,
+.estado-avaliacoes-admin {
+  background: var(--rc-card);
+  border: 1px solid var(--rc-line) !important;
+  box-shadow: var(--rc-sh) !important;
+  border-radius: 20px;
+}
+.card-kpi-moderno .card-body { background: transparent; color: var(--rc-ink); }
+.card-kpi-moderno:hover,
+.card-cupom-moderno:hover,
+.card-avaliacao-admin:hover { transform: translateY(-2px); }
+
+.tabela-admin thead tr { background: var(--adm-sub); }
+.tabela-admin th { color: var(--rc-muted); border-bottom: 1px solid var(--rc-line); }
+.tabela-admin td { border-bottom: 1px solid var(--rc-line); background: transparent; }
+.linha-tabela-admin:hover td { background: var(--adm-sub); }
+.id-reserva { color: var(--rc-muted); }
+
+/* ── Filtros, botões de ação e badges ──────────────────────── */
+.filtro-btn-admin {
+  min-height: 34px;
+  background: var(--rc-card);
+  border: 1.5px solid var(--rc-line);
+  color: var(--rc-ink);
+}
+.filtro-btn-admin:hover { background: var(--rc-fill); }
+.filtro-btn-admin.ativo {
+  background: var(--rc-ink);
+  border-color: var(--rc-ink);
+  color: var(--rc-bg);
+}
+.filtro-count { background: rgba(127, 127, 127, 0.22); }
+.filtro-btn-admin:not(.ativo) .filtro-count { background: var(--rc-fill); color: var(--rc-muted); }
+
+.btn-acao-tabela { width: 34px; height: 34px; border-radius: 999px; background: var(--rc-fill); color: var(--rc-ink); }
+.btn-acao-tabela:hover { background: var(--rc-line); }
+.btn-acao-tabela.ver { background: var(--adm-info-bg); color: var(--adm-info-fg); }
+.btn-acao-tabela.ver:hover { background: var(--adm-info-bd); color: var(--adm-info-fg); }
+.btn-acao-tabela.text-danger { background: var(--adm-err-bg); }
+.btn-acao-tabela.text-primary { background: var(--adm-info-bg); }
+
+.badge-status-admin { border: 1px solid transparent; }
+.badge-status-admin.st-pendente { background: var(--adm-warn-bg); color: var(--adm-warn-fg); border-color: var(--adm-warn-bd); }
+.badge-status-admin.st-pagamento-pendente { background: var(--adm-warn-bg); color: var(--adm-warn-fg); border-color: var(--adm-warn-bd); }
+.badge-status-admin.st-aprovada { background: var(--adm-ok-bg); color: var(--adm-ok-fg); border-color: var(--adm-ok-bd); }
+.badge-status-admin.st-recusada,
+.badge-status-admin.st-cancelada { background: var(--adm-err-bg); color: var(--adm-err-fg); border-color: var(--adm-err-bd); }
+.badge-status-admin.st-concluida { background: var(--adm-info-bg); color: var(--adm-info-fg); border-color: var(--adm-info-bd); }
+
+.kpi-badge-variacao.neutra { background: var(--rc-fill); color: var(--rc-muted); border-color: var(--rc-line); }
+.dias-ate-badge { background: var(--adm-info-bg); color: var(--adm-info-fg); }
+.badge-total-6m,
+.badge-resposta-pendente { background: var(--adm-warn-bg); border: 1px solid var(--adm-warn-bd); color: var(--adm-warn-fg); }
+.avaliacao-contador.limite { color: var(--adm-warn-fg); }
+.badge-publico-todos { background: var(--adm-info-bg); color: var(--adm-info-fg); border-color: var(--adm-info-bd); }
+.badge-publico-primeira { background: var(--adm-info-bg); color: var(--adm-info-fg); border-color: var(--adm-info-bd); }
+.badge-publico-retornante,
+.badge-publico-recorrente { background: var(--adm-warn-bg); color: var(--adm-warn-fg); border-color: var(--adm-warn-bd); }
+.badge-publico-especifico { background: var(--adm-pur-bg); color: var(--adm-pur-fg); border-color: var(--adm-pur-bd); }
+.alerta-pendentes-admin { background: var(--adm-warn-bg); border-color: var(--adm-warn-bd); color: var(--adm-warn-fg); }
+
+/* ── Avatares ──────────────────────────────────────────────── */
+.mini-avatar,
+.avatar-checkin,
+.avatar-avaliacao-admin { background: var(--adm-avatar); color: #fff; box-shadow: none; }
+.avatar-hospede-modal { background: var(--rc-u1); color: #1a0b00; }
+.item-bloqueio-card .avatar-checkin { background: var(--adm-star) !important; color: #1a0b00; }
+
+
+/* ── Paginação ─────────────────────────────────────────────── */
+.btn-paginacao,
+.btn-numero-pagina { background: var(--rc-card); border-color: var(--rc-line); color: var(--rc-ink); border-radius: 999px; }
+.btn-paginacao:hover:not(:disabled),
+.btn-numero-pagina:hover { background: var(--rc-fill); border-color: var(--rc-line); }
+.btn-numero-pagina.ativo { background: var(--rc-ink); border-color: var(--rc-ink); color: var(--rc-bg); }
+.btn-ver-todas { border-color: var(--rc-line) !important; color: var(--rc-ink) !important; }
+.btn-ver-todas:hover { background: var(--rc-fill) !important; color: var(--rc-ink) !important; }
