@@ -22,8 +22,20 @@ const pagamentoRoutes = require('./routes/pagamentoRoutes');
 const app = express();
 
 // Configurações iniciais 
+const origensPermitidas = [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    process.env.FRONTEND_URL
+].filter(Boolean);
+
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: (origin, callback) => {
+        if (!origin || origensPermitidas.includes(origin) || origin.endsWith('.vercel.app') || origin.includes('localhost')) {
+            callback(null, true);
+        } else {
+            callback(new Error('Bloqueado por CORS: ' + origin));
+        }
+    },
     credentials: true
 }));
 app.use(express.json());
