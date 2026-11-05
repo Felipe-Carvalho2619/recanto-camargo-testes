@@ -317,7 +317,7 @@ exports.logout = (req, res) => {
 exports.obterPerfil = async (req, res) => {
     try {
         const [usuarios] = await db.query(
-            'SELECT Usu_Id AS id, Usu_Nome AS nome, Usu_Email AS email, Usu_Telefone AS telefone FROM usu_usuario WHERE Usu_Id = ? AND Usu_Status = "ATIVO"',
+            'SELECT Usu_Id AS id, Usu_Nome AS nome, Usu_Email AS email, Usu_Telefone AS telefone FROM usu_usuario WHERE Usu_Id = ? AND Usu_Status = \'ATIVO\'',
             [req.usuario.id]
         );
         if (usuarios.length === 0) {

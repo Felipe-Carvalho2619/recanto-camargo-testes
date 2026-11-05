@@ -412,7 +412,7 @@ async function conciliarReservasConcluidas(executor, db, notificacoes) {
                 conexao = await db.getConnection();
                 await conexao.beginTransaction();
                 const [res] = await conexao.query(
-                    'UPDATE res_reserva SET Res_Status = "CONCLUIDA" WHERE Res_Id = ? AND Res_Status = "CONFIRMADA"',
+                    'UPDATE res_reserva SET Res_Status = \'CONCLUIDA\' WHERE Res_Id = ? AND Res_Status = \'CONFIRMADA\'',
                     [r.Res_Id]
                 );
                 if (res.affectedRows === 1) {

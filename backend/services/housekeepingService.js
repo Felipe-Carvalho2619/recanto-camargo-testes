@@ -53,7 +53,7 @@ async function processarCancelamentoReservasAbandonadas({ db, emailService, noti
 
             // 1. Atualiza status para CANCELADA
             await executor.query(
-                'UPDATE res_reserva SET Res_Status = "CANCELADA" WHERE Res_Id = ? AND Res_Status = ?',
+                'UPDATE res_reserva SET Res_Status = \'CANCELADA\' WHERE Res_Id = ? AND Res_Status = ?',
                 [reserva.Res_Id, reserva.Res_Status]
             );
 

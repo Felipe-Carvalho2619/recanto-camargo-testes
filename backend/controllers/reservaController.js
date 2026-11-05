@@ -180,7 +180,7 @@ exports.criarReserva = async (req, res) => {
         await conexao.beginTransaction();
 
         const [imoveis] = await conexao.query(
-            'SELECT Imo_Id FROM imo_imovel WHERE Imo_Id = ? AND Imo_Status = "ATIVO" FOR UPDATE', 
+            'SELECT Imo_Id FROM imo_imovel WHERE Imo_Id = ? AND Imo_Status = \'ATIVO\' FOR UPDATE', 
             [imoId]
         );
 

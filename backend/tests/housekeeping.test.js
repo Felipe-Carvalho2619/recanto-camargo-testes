@@ -51,7 +51,7 @@ test('processarCancelamentoReservasAbandonadas cancela PAGAMENTO_PENDENTE expira
             if (/SELECT[\s\S]*FROM res_reserva/i.test(sql)) {
                 return [[reservaExpirada]];
             }
-            if (/UPDATE res_reserva SET Res_Status = "CANCELADA"/i.test(sql)) {
+            if (/UPDATE res_reserva SET Res_Status = ['"]CANCELADA['"]/i.test(sql)) {
                 statusAtualizado.push({ sql, params });
                 return [{ affectedRows: 1 }];
             }
@@ -136,7 +136,7 @@ test('processarCancelamentoReservasAbandonadas cancela PENDENTE expirada (>48h) 
             if (/SELECT[\s\S]*FROM res_reserva/i.test(sql)) {
                 return [[reservaPendente]];
             }
-            if (/UPDATE res_reserva SET Res_Status = "CANCELADA"/i.test(sql)) {
+            if (/UPDATE res_reserva SET Res_Status = ['"]CANCELADA['"]/i.test(sql)) {
                 statusAtualizado.push({ sql, params });
                 return [{ affectedRows: 1 }];
             }
