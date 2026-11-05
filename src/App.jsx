@@ -113,8 +113,11 @@ function AppContent() {
             <Route path="/ReservaConcluida/:id"   element={<ReservaConcluida />} />
             <Route path="/Configuracoes"          element={<RotaProtegida elemento={<Configuracoes />} />} />
             <Route path="/Reserva"                element={<Reserva />} />
+            <Route path="/reserva"                element={<Navigate to="/Reserva" replace />} />
             <Route path="/Avaliacoes"             element={<Avaliacoes />} />
+            <Route path="/avaliacoes"             element={<Navigate to="/Avaliacoes" replace />} />
             <Route path="/Fotos"                  element={<Fotos />} />
+            <Route path="/fotos"                  element={<Navigate to="/Fotos" replace />} />
             <Route path="/TermosDeUso"            element={<TermosDeUso />} />
             <Route path="/termosdeuso"            element={<Navigate to="/TermosDeUso" replace />} />
             <Route path="/Privacidade"            element={<Privacidade />} />
