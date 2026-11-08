@@ -27,6 +27,9 @@
   --rc-line: #EAE7E2;         /* Bordas e Divisores */
   --rc-fill: #E8E4DD;         /* Fundos Secundários / Badges neutras */
   --rc-header-bg: rgba(250, 249, 246, 0.96); /* Header Translúcido */
+  --rc-tint: #EAF0F7;         /* Fundo Azul Suave */
+  --rc-wtint: #FFF1E8;        /* Fundo Laranja/Creme Suave */
+  --rc-btext: #003366;        /* Azul de Destaque */
 
   /* ── Estados Semânticos (Feedbacks) ─────────────────────────────────────── */
   --rc-ok: #146C2E;           /* Verde Sucesso */

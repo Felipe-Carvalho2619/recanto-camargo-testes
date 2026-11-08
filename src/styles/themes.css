@@ -15,15 +15,19 @@
   color-scheme: dark;
 
   /* Superfícies e Textos */
-  --rc-bg: #141311;
-  --rc-card: #1e1c19;
-  --rc-ink: #f2efe9;
-  --rc-muted: #b5afa5;
-  --rc-line: #37332e;
-  --rc-fill: #2a2723;
-  --rc-header-bg: rgba(20, 19, 17, 0.96);
+  --rc-bg: #0B1422;
+  --rc-card: #12233A;
+  --rc-ink: #F2F5FA;
+  --rc-muted: #A9B6C8;
+  --rc-line: #243752;
+  --rc-fill: #1B2D47;
+  --rc-header-bg: rgba(11, 20, 34, 0.96);
 
   /* Acentos de Marca para Escuro */
+  --rc-u2: #0F3A6B;
+  --rc-tint: #102640;
+  --rc-wtint: #1E1A17;
+  --rc-btext: #8DB8F2;
   --rc-u1-text: #ff9a57;
 
   /* Feedbacks Semânticos */
