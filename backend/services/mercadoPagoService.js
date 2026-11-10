@@ -46,8 +46,9 @@ async function criarPreferenciaPagamento(reserva, usuario) {
         throw erro;
     }
 
-    const appFrontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173/recanto-camargo/#';
-    const appBackendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
+    const rawFrontend = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '');
+    const appFrontendUrl = rawFrontend.endsWith('/#') ? rawFrontend : `${rawFrontend}/#`;
+    const appBackendUrl = (process.env.BACKEND_URL || 'http://localhost:3000').replace(/\/$/, '');
 
     const preferenceBody = {
         items: [
