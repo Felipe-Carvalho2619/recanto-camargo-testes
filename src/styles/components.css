@@ -196,3 +196,10 @@
 .rc-pop-head button:hover {
   color: var(--rc-ink);
 }
+
+/* Hero: o título e textos sobre a foto devem ser sempre brancos em qualquer tema */
+.rc-hero h1,
+.rc-hero-copy h1,
+.rc-hero p.rc-sub {
+  color: #ffffff !important;
+}
