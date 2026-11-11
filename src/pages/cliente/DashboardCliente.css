@@ -139,6 +139,11 @@
   transition: opacity 0.2s;
 }
 
+.sidebar-cli-marca:hover,
+.sidebar-cli-marca:focus-visible {
+  opacity: 0.85;
+}
+
 .sidebar-cli.colapsada .sidebar-cli-marca {
   opacity: 0;
   pointer-events: none;

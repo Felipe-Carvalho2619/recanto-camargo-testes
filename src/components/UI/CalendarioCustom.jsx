@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
-import './CalendarioCustom.css';
 import { verificarSeFeriado } from '../../utils/feriados';
 import { API_BASE, IS_API_AVAILABLE } from '../../utils/api';
 import { usePreferencias } from '../../hooks/usePreferencias';
@@ -11,7 +10,7 @@ const CHAVE_RESERVAS = 'recanto_camargo_reservas';
 // Dois meses lado a lado a partir desta largura de tela (no celular, um mês por vez).
 const LARGURA_DOIS_MESES = 768;
 
-function usarDoisMeses(ativo) {
+function useDoisMeses(ativo) {
   const [largo, setLargo] = useState(() => typeof window !== 'undefined' && window.innerWidth >= LARGURA_DOIS_MESES);
   useEffect(() => {
     if (!ativo) return undefined;
@@ -26,7 +25,7 @@ function usarDoisMeses(ativo) {
 // (o onChange recebe [entrada, null] no primeiro clique).
 function CalendarioCustom({ valor, onChange, minDate, imovelId = 1, duplo = false }) {
   const { t, idioma } = usePreferencias();
-  const doisMeses = usarDoisMeses(duplo);
+  const doisMeses = useDoisMeses(duplo);
   const [reservas, setReservas] = useState([]);
   const [erroConflito, setErroConflito] = useState('');
 

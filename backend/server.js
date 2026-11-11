@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const db = require('./config/db');
+const { listarOrigensPermitidas } = require('./utils/configuracaoWeb');
 const { criarServicoNotificacoes } = require('./notificacoes');
 const { criarServicoEmail, criarHtmlEmail, criarEmailBoasVindas, criarEmailCupomExclusivo } = require('./email');
 const { errorHandler } = require('./middlewares/errorHandler');
@@ -22,16 +23,10 @@ const pagamentoRoutes = require('./routes/pagamentoRoutes');
 const app = express();
 app.set('trust proxy', 1);
 
-// Configurações iniciais 
-const origensPermitidas = [
-    'http://localhost:5173',
-    'http://localhost:3000',
-    process.env.FRONTEND_URL
-].filter(Boolean);
-
 app.use(cors({
     origin: (origin, callback) => {
-        if (!origin || origensPermitidas.includes(origin) || origin.endsWith('.vercel.app') || origin.includes('localhost')) {
+        const permitidas = listarOrigensPermitidas();
+        if (!origin || permitidas.includes(origin) || origin.endsWith('.vercel.app') || origin.includes('localhost')) {
             callback(null, true);
         } else {
             callback(new Error('Bloqueado por CORS: ' + origin));
