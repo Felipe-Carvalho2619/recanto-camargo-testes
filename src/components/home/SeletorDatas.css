@@ -45,7 +45,16 @@
 .rc-datas-fechar { min-height: 44px; padding: 0 22px; font-size: .95rem; }
 
 /* ─── Calendário estilo Airbnb (.rc-cal) ────────────────────── */
-.rc-pop .custom-calendar-home.rc-cal { max-width: none !important; width: 100% !important; }
+.rc-pop .custom-calendar-home.rc-cal {
+  max-width: none !important;
+  width: 100% !important;
+  border: none !important;
+  background-color: transparent !important;
+  font-family: inherit;
+}
+.custom-calendar-home.rc-cal .react-calendar__month-view__weekdays__weekday abbr {
+  text-decoration: none !important;
+}
 .custom-calendar-home.rc-cal .react-calendar__navigation { background: transparent; border: 0; border-radius: 0; padding: 0; margin-bottom: .5rem; height: 44px; }
 .custom-calendar-home.rc-cal .react-calendar__navigation button { min-width: 40px; color: var(--rc-ink); font-size: 1rem; border-radius: 50%; }
 .custom-calendar-home.rc-cal .react-calendar__navigation button:disabled { background: none; opacity: .3; }
