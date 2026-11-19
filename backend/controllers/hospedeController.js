@@ -221,6 +221,7 @@ exports.listarReservas = async (req, res) => {
                 (SELECT MAX(hhs.His_DataAlteracao) FROM his_historicoreservastatus hhs WHERE hhs.Res_Id = r.Res_Id AND hhs.His_StatusAtual = 'PAGAMENTO_PENDENTE') as dataAprovacao,
                 p.Pag_ValorReembolsado as valorReembolsado,
                 p.Pag_Status as pagamentoStatus,
+                p.Pag_Metodo as pagamentoMetodo,
                 i.Imo_Nome as imovel,
                 'Ponte Alta, Aparecida - SP' as localizacao,
                 i.Imo_ValorFixo as valorDiaria,
@@ -313,7 +314,9 @@ exports.listarReservas = async (req, res) => {
                 criadaEm: reserva.criadaEm ? (reserva.criadaEm instanceof Date ? reserva.criadaEm.toISOString() : new Date(reserva.criadaEm).toISOString()) : null,
                 expiraEm: calcularExpiraEm(reserva),
                 status: statusMap[reserva.status] || 'pendente',
-                formaPagamento: 'PIX',
+                formaPagamento: (reserva.pagamentoStatus === 'APROVADO' || reserva.pagamentoStatus === 'REEMBOLSADO')
+                    ? (reserva.pagamentoMetodo === 'CARTAO_CREDITO' ? 'Cartão de Crédito' : (reserva.pagamentoMetodo || 'Mercado Pago'))
+                    : null,
                 valorReembolsado: Number(reserva.valorReembolsado || 0),
                 motivoRecusa: reserva.motivo,
                 avaliacao: avaliacaoId === null ? null : normalizarAvaliacao({

@@ -266,7 +266,7 @@ function ModalDetalheReserva({ reserva, aoFechar, aoCancelar, aoPagar, pagando =
                 </div>
                 <div className="cli-bloco-dado flex-fill">
                   <div className="cli-bloco-label">{t('Método')}</div>
-                  <div className="cli-bloco-valor">{reserva.formaPagamento || 'PIX'}</div>
+                  <div className="cli-bloco-valor">{reserva.formaPagamento || t('A definir')}</div>
                 </div>
               </div>
               <div className="cli-bloco-dado total">
