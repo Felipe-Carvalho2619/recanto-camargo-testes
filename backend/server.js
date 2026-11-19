@@ -1,8 +1,9 @@
 const express = require('express');
+const helmet = require('helmet');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const db = require('./config/db');
-const { listarOrigensPermitidas } = require('./utils/configuracaoWeb');
+const { criarVerificadorOrigem } = require('./utils/configuracaoWeb');
 const { criarServicoNotificacoes } = require('./notificacoes');
 const { criarServicoEmail, criarHtmlEmail, criarEmailBoasVindas, criarEmailCupomExclusivo } = require('./email');
 const { errorHandler } = require('./middlewares/errorHandler');
@@ -21,20 +22,21 @@ const proprietarioRoutes = require('./routes/proprietarioRoutes');
 const pagamentoRoutes = require('./routes/pagamentoRoutes');
 
 const app = express();
+app.disable('x-powered-by');
 app.set('trust proxy', 1);
 
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' }
+}));
+
+// Verificação de saúde para o host (Render / monitoramento)
+app.get('/healthz', (req, res) => res.json({ ok: true }));
+
 app.use(cors({
-    origin: (origin, callback) => {
-        const permitidas = listarOrigensPermitidas();
-        if (!origin || permitidas.includes(origin) || origin.endsWith('.vercel.app') || origin.includes('localhost')) {
-            callback(null, true);
-        } else {
-            callback(new Error('Bloqueado por CORS: ' + origin));
-        }
-    },
+    origin: criarVerificadorOrigem(),
     credentials: true
 }));
-app.use(express.json());
+app.use(express.json({ limit: '50kb' }));
 app.use(cookieParser());
 
 // --- SERVIÇOS COMPARTILHADOS (acessíveis via req.app.get) ---

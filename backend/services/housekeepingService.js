@@ -52,10 +52,14 @@ async function processarCancelamentoReservasAbandonadas({ db, emailService, noti
             const executor = conexao || db;
 
             // 1. Atualiza status para CANCELADA
-            await executor.query(
+            const [resUpdate] = await executor.query(
                 'UPDATE res_reserva SET Res_Status = \'CANCELADA\' WHERE Res_Id = ? AND Res_Status = ?',
                 [reserva.Res_Id, reserva.Res_Status]
             );
+            if (resUpdate && resUpdate.affectedRows === 0) {
+                if (usarTransacao && conexao) await conexao.rollback();
+                continue;
+            }
 
             // 2. Registra na auditoria (his_historicoreservastatus)
             const motivo = reserva.Res_Status === 'PAGAMENTO_PENDENTE'

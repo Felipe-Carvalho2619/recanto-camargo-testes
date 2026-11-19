@@ -9,11 +9,13 @@ function LinkAutenticacao({
   className = '',
   ...props 
 }) {
+  const relSeguro = props.target === '_blank' ? (props.rel || 'noopener noreferrer') : props.rel;
   return (
     <Link
       to={para}
       className={`link-autenticacao link-${variante} ${className}`}
       {...props}
+      rel={relSeguro}
     >
       {children}
     </Link>

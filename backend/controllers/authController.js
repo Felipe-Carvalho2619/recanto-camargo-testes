@@ -78,9 +78,7 @@ exports.cadastrar = async (req, res) => {
 
         await conexao.beginTransaction();
 
-        const ipOrigem = req.headers['x-forwarded-for'] 
-            ? String(req.headers['x-forwarded-for']).split(',')[0].trim() 
-            : (req.socket?.remoteAddress || req.ip || '127.0.0.1');
+        const ipOrigem = req.ip || req.socket?.remoteAddress || '127.0.0.1';
         const versaoTermos = typeof req.body.versaoTermos === 'string' && req.body.versaoTermos.trim() 
             ? req.body.versaoTermos.trim().slice(0, 10) 
             : 'v1.0';
@@ -158,9 +156,11 @@ const JANELA_TENTATIVAS_MS = 15 * 60 * 1000; // 15 minutos
 const COOLDOWN_ALERTA_MS = 24 * 60 * 60 * 1000; // 24 horas entre e-mails de alerta
 
 function extrairIpCliente(req) {
-    const rawIp = req?.headers?.['x-forwarded-for']
-        ? String(req.headers['x-forwarded-for']).split(',')[0].trim()
-        : (req?.socket?.remoteAddress || req?.ip || '127.0.0.1');
+    const rawIp = req?.ip
+        ? req.ip
+        : (req?.headers?.['x-forwarded-for']
+            ? String(req.headers['x-forwarded-for']).split(',')[0].trim()
+            : (req?.socket?.remoteAddress || '127.0.0.1'));
     return String(rawIp || '127.0.0.1').replace(/^::ffff:/, '');
 }
 
@@ -261,7 +261,11 @@ exports.login = async (req, res) => {
         const [rows] = await db.query('SELECT * FROM usu_usuario WHERE Usu_Email = ?', [email]);
         const usuario = rows[0];
 
-        if (!usuario) return res.status(401).json({ error: 'Credenciais inválidas.' });
+        if (!usuario) {
+            // Equaliza tempo de resposta contra enumeração por timing attack
+            await bcrypt.compare(senha, '$2b$10$dummyhashparaequalizartempoderesposta123456789012345');
+            return res.status(401).json({ error: 'Credenciais inválidas.' });
+        }
         if (usuario.Usu_Status !== 'ATIVO') return res.status(403).json({ error: 'Esta conta encontra-se inativa ou bloqueada.' });
 
         // Camada 2: Proteção Temporal por Conta (Dual-Layer OWASP A07 contra VPNs e bots)
@@ -353,10 +357,11 @@ exports.atualizarPerfil = async (req, res) => {
             [nome.trim(), telefone ? telefone.trim() : '', req.usuario.id]
         );
 
+        const [adminRows] = await db.query('SELECT Usu_Id FROM pro_proprietario WHERE Usu_Id = ? LIMIT 1', [req.usuario.id]);
         const novoPayload = {
             id: req.usuario.id,
             nome: nome.trim(),
-            tipo: req.usuario.tipo
+            tipo: adminRows.length > 0 ? 'proprietario' : 'hospede'
         };
         const token = jwt.sign(novoPayload, process.env.JWT_SECRET, { expiresIn: '7d' });
         res.cookie('token', token, {

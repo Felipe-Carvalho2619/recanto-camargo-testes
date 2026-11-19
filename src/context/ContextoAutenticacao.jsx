@@ -23,7 +23,10 @@ export function ContextoAutenticacao({ children }) {
         setUsuario(data.usuario);
       })
       .catch(() => {
-        setUsuario(null);
+        try {
+      localStorage.removeItem('recanto_reservas_cliente');
+    } catch { /* ignore */ }
+    setUsuario(null);
       })
       .finally(() => {
         setCarregando(false);
@@ -92,6 +95,9 @@ export function ContextoAutenticacao({ children }) {
         console.error('Erro ao fazer logout:', e);
       }
     }
+    try {
+      localStorage.removeItem('recanto_reservas_cliente');
+    } catch { /* ignore */ }
     setUsuario(null);
   }, []);
 

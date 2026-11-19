@@ -14,6 +14,9 @@ const bancoMock = {
     async query(sql, parametros = []) {
         estado.consultas.push({ sql, parametros });
         const texto = sql.replace(/\s+/g, ' ').trim();
+        if (texto.startsWith('SELECT Usu_Status FROM usu_usuario')) {
+            return [[{ Usu_Status: 'ATIVO' }]];
+        }
         if (texto.startsWith('SELECT r.Res_Id')) {
             return [[{
                 Res_Id: 1,

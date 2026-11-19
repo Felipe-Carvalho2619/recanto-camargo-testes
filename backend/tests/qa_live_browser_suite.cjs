@@ -36,8 +36,8 @@ async function runQASuite() {
     await guestPage.goto(`${baseUrl}/Login`);
     await guestPage.waitForLoadState('networkidle');
 
-    await guestPage.getByPlaceholder('Insira seu email').fill('felipeteste@email.com');
-    await guestPage.getByPlaceholder('Insira sua senha').fill('felipe123');
+    await guestPage.getByPlaceholder('Insira seu email').fill(process.env.TEST_GUEST_EMAIL || '');
+    await guestPage.getByPlaceholder('Insira sua senha').fill(process.env.TEST_GUEST_PASSWORD || '');
 
     const screenshotLogin = path.join(screenshotsDir, '01_login_hospede.png');
     await guestPage.screenshot({ path: screenshotLogin });
@@ -127,8 +127,8 @@ async function runQASuite() {
     await ownerPage.goto(`${baseUrl}/Login`);
     await ownerPage.waitForLoadState('networkidle');
 
-    await ownerPage.getByPlaceholder('Insira seu email').fill('rafaelproprietario@email.com');
-    await ownerPage.getByPlaceholder('Insira sua senha').fill('rafael123');
+    await ownerPage.getByPlaceholder('Insira seu email').fill(process.env.TEST_OWNER_EMAIL || '');
+    await ownerPage.getByPlaceholder('Insira seu senha').fill(process.env.TEST_OWNER_PASSWORD || '');
 
     const loginOwnerPromise = ownerPage.waitForResponse(
       res => res.url().includes('/api/usuarios/login') && res.status() === 200,

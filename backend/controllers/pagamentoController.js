@@ -1,10 +1,30 @@
+const crypto = require('crypto');
 const db = require('../config/db');
 const { criarPreferenciaPagamento, consultarPagamento, buscarPagamentoPorReserva, extrairReservaIdDeReferencia } = require('../services/mercadoPagoService');
 
+function verificarAssinaturaWebhook(req, secret) {
+    const xSig = req.headers['x-signature'];
+    const xReqId = req.headers['x-request-id'];
+    const dataId = req.query?.['data.id'] || req.query?.id || req.body?.data?.id || '';
+    if (!xSig || !xReqId || !dataId) return false;
+
+    const partes = Object.fromEntries(
+        String(xSig).split(',').map(p => p.trim().split('=').map(s => s.trim()))
+    );
+    if (!partes.ts || !partes.v1) return false;
+
+    const manifest = `id:${String(dataId).toLowerCase()};request-id:${xReqId};ts:${partes.ts};`;
+    const esperado = crypto.createHmac('sha256', secret).update(manifest).digest('hex');
+    const bufEsp = Buffer.from(esperado, 'hex');
+    const bufRec = Buffer.from(partes.v1, 'hex');
+    if (bufEsp.length !== bufRec.length) return false;
+    return crypto.timingSafeEqual(bufEsp, bufRec);
+}
+
 /**
- * Helper para efetivar a aprovação de pagamento de uma reserva no banco
+ * Helper atômico para efetivar a aprovação de pagamento de uma reserva no banco
  */
-async function efetivarAprovacaoPagamento(reservaId, transacaoId, metodo = 'PIX', app = null) {
+async function efetivarAprovacaoPagamento(reservaId, transacaoId, metodo = 'PIX', app = null, valorPago = null) {
     let metodoBanco = 'PIX';
     const m = String(metodo).toLowerCase();
     if (m.includes('card') || m.includes('credit') || m.includes('master') || m.includes('visa')) {
@@ -13,61 +33,106 @@ async function efetivarAprovacaoPagamento(reservaId, transacaoId, metodo = 'PIX'
         metodoBanco = 'BOLETO';
     }
 
-    const [pagamentos] = await db.query(
-        `SELECT Pag_Id FROM pag_pagamento WHERE Res_Id = ?`,
-        [reservaId]
-    );
+    const conexao = await db.getConnection();
+    let dadosReservaNotificar = null;
 
-    if (pagamentos.length === 0) {
-        await db.query(
-            `INSERT INTO pag_pagamento 
-             (Res_Id, Pag_Metodo, Pag_Status, Pag_Valor, Pag_DataHora, Pag_TransacaoId)
-             VALUES (?, ?, 'APROVADO', 0, NOW(), ?)`,
-            [reservaId, metodoBanco, String(transacaoId)]
-        );
-    } else {
-        await db.query(
-            `UPDATE pag_pagamento 
-             SET Pag_Status = 'APROVADO', Pag_Metodo = ?, Pag_TransacaoId = ?, Pag_DataHora = NOW()
-             WHERE Res_Id = ?`,
-            [metodoBanco, String(transacaoId), reservaId]
-        );
-    }
+    try {
+        await conexao.beginTransaction();
 
-    const [reservaAtual] = await db.query(
-        `SELECT r.Res_Status, r.Hos_Hospede_Usu_Id, r.Res_ValorTotal,
-                u.Usu_Nome AS hospedeNome,
-                u.Usu_Email AS hospedeEmail,
-                i.Pro_Proprietario_Usu_Id,
-                prop.Usu_Email AS proprietarioEmail
-         FROM res_reserva r
-         LEFT JOIN usu_usuario u ON u.Usu_Id = r.Hos_Hospede_Usu_Id
-         LEFT JOIN imo_imovel i ON i.Imo_Id = r.Imo_Id
-         LEFT JOIN usu_usuario prop ON prop.Usu_Id = i.Pro_Proprietario_Usu_Id
-         WHERE r.Res_Id = ?`,
-        [reservaId]
-    );
-
-    if (reservaAtual.length > 0 && reservaAtual[0].Res_Status !== 'CONFIRMADA') {
-        const dadosReserva = reservaAtual[0];
-        const statusAnterior = dadosReserva.Res_Status;
-        await db.query(
-            `UPDATE res_reserva SET Res_Status = 'CONFIRMADA' WHERE Res_Id = ?`,
+        const [reservaAtual] = await conexao.query(
+            `SELECT r.Res_Status, r.Hos_Hospede_Usu_Id, r.Res_ValorTotal,
+                    u.Usu_Nome AS hospedeNome,
+                    u.Usu_Email AS hospedeEmail,
+                    i.Pro_Proprietario_Usu_Id,
+                    prop.Usu_Email AS proprietarioEmail
+             FROM res_reserva r
+             LEFT JOIN usu_usuario u ON u.Usu_Id = r.Hos_Hospede_Usu_Id
+             LEFT JOIN imo_imovel i ON i.Imo_Id = r.Imo_Id
+             LEFT JOIN usu_usuario prop ON prop.Usu_Id = i.Pro_Proprietario_Usu_Id
+             WHERE r.Res_Id = ? FOR UPDATE`,
             [reservaId]
         );
 
-        await db.query(
-            `INSERT INTO his_historicoreservastatus 
-             (Res_Id, His_DataAlteracao, His_StatusAnterior, His_StatusAtual, His_Motivo)
-             VALUES (?, NOW(), ?, 'CONFIRMADA', 'Pagamento aprovado via Mercado Pago')`,
-            [reservaId, statusAnterior]
+        if (reservaAtual.length === 0) {
+            await conexao.rollback();
+            return;
+        }
+
+        const dadosReserva = reservaAtual[0];
+        if (dadosReserva.Res_Status === 'CONFIRMADA') {
+            await conexao.commit();
+            return;
+        }
+        if (dadosReserva.Res_Status !== 'PAGAMENTO_PENDENTE') {
+            console.warn(`[PAGAMENTO IGNORADO] Reserva #${reservaId} está em status ${dadosReserva.Res_Status}, não pode ser confirmada.`);
+            await conexao.rollback();
+            return;
+        }
+
+        if (valorPago !== null && valorPago !== undefined) {
+            const centavosPagos = Math.round(Number(valorPago) * 100);
+            const centavosEsperados = Math.round(Number(dadosReserva.Res_ValorTotal) * 100);
+            if (!Number.isFinite(centavosPagos) || centavosPagos < centavosEsperados - 1) {
+                console.warn(`[DIVERGÊNCIA DE VALOR] Reserva #${reservaId}: esperado=${centavosEsperados}c, pago=${centavosPagos}c`);
+                await conexao.rollback();
+                return;
+            }
+        }
+
+        const valorGravar = valorPago !== null && valorPago !== undefined
+            ? Number(valorPago)
+            : Number(dadosReserva.Res_ValorTotal || 0);
+
+        const [pagamentos] = await conexao.query(
+            `SELECT Pag_Id FROM pag_pagamento WHERE Res_Id = ? FOR UPDATE`,
+            [reservaId]
         );
 
-        if (app) {
-            const notificacoes = app.get('notificacoes');
-            const emailService = app.get('emailService');
-            const valorFormatado = Number(dadosReserva.Res_ValorTotal || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-            const nomeHospede = dadosReserva.hospedeNome || 'Hóspede';
+        if (pagamentos.length === 0) {
+            await conexao.query(
+                `INSERT INTO pag_pagamento 
+                 (Res_Id, Pag_Metodo, Pag_Status, Pag_Valor, Pag_DataHora, Pag_TransacaoId)
+                 VALUES (?, ?, 'APROVADO', ?, NOW(), ?)`,
+                [reservaId, metodoBanco, valorGravar, String(transacaoId)]
+            );
+        } else {
+            await conexao.query(
+                `UPDATE pag_pagamento 
+                 SET Pag_Status = 'APROVADO', Pag_Metodo = ?, Pag_Valor = ?, Pag_TransacaoId = ?, Pag_DataHora = NOW()
+                 WHERE Res_Id = ?`,
+                [metodoBanco, valorGravar, String(transacaoId), reservaId]
+            );
+        }
+
+        const [resUpd] = await conexao.query(
+            `UPDATE res_reserva SET Res_Status = 'CONFIRMADA' WHERE Res_Id = ? AND Res_Status = 'PAGAMENTO_PENDENTE'`,
+            [reservaId]
+        );
+
+        if (resUpd.affectedRows === 1) {
+            await conexao.query(
+                `INSERT INTO his_historicoreservastatus 
+                 (Res_Id, His_DataAlteracao, His_StatusAnterior, His_StatusAtual, His_Motivo)
+                 VALUES (?, NOW(), 'PAGAMENTO_PENDENTE', 'CONFIRMADA', 'Pagamento aprovado via Mercado Pago')`,
+                [reservaId]
+            );
+            dadosReservaNotificar = dadosReserva;
+        }
+
+        await conexao.commit();
+    } catch (err) {
+        await conexao.rollback().catch(() => {});
+        throw err;
+    } finally {
+        conexao.release();
+    }
+
+    if (dadosReservaNotificar && app) {
+        const dadosReserva = dadosReservaNotificar;
+        const notificacoes = app.get('notificacoes');
+        const emailService = app.get('emailService');
+        const valorFormatado = Number(dadosReserva.Res_ValorTotal || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        const nomeHospede = dadosReserva.hospedeNome || 'Hóspede';
 
             const tituloHospede = 'Pagamento Confirmado — Reserva Garantida!';
             const msgHospede = `O pagamento da sua reserva #${reservaId} (${valorFormatado}) foi aprovado com sucesso via Mercado Pago. Sua estadia está confirmada!`;
@@ -119,7 +184,6 @@ async function efetivarAprovacaoPagamento(reservaId, transacaoId, metodo = 'PIX'
                 }).catch(errEmail => console.error('Falha ao processar emails de confirmação de pagamento:', errEmail));
             }
         }
-    }
 }
 
 /**
@@ -156,7 +220,7 @@ exports.criarPreferencia = async (req, res) => {
             return res.status(403).json({ error: 'Acesso negado: você não tem permissão para esta reserva.' });
         }
 
-        if (reserva.Res_Status === 'CANCELADA' || reserva.Res_Status === 'RECUSADA') {
+        if (reserva.Res_Status !== 'PAGAMENTO_PENDENTE') {
             return res.status(400).json({ error: `Esta reserva encontra-se ${reserva.Res_Status.toLowerCase()} e não pode receber pagamentos.` });
         }
 
@@ -204,9 +268,9 @@ exports.criarPreferencia = async (req, res) => {
         });
     } catch (error) {
         console.error('Erro ao criar preferência no Mercado Pago:', error);
-        const status = error.status || 500;
+        const status = error.status && error.status < 500 ? error.status : 500;
         return res.status(status).json({
-            error: error.message || 'Erro interno ao processar gateway de pagamento.'
+            error: status < 500 ? error.message : 'Erro interno ao processar gateway de pagamento.'
         });
     }
 };
@@ -279,6 +343,15 @@ exports.consultarStatus = async (req, res) => {
  * POST /api/pagamentos/webhook
  */
 exports.receberWebhook = async (req, res) => {
+    const secret = (process.env.MERCADO_PAGO_WEBHOOK_SECRET || '').trim();
+    if (process.env.NODE_ENV === 'production' && !secret) {
+        console.warn('[WEBHOOK] MERCADO_PAGO_WEBHOOK_SECRET não configurado em produção.');
+        return res.status(503).json({ error: 'Webhook indisponível.' });
+    }
+    if (secret && !verificarAssinaturaWebhook(req, secret)) {
+        return res.status(401).json({ error: 'Assinatura de webhook inválida.' });
+    }
+
     // Mercado Pago exige retorno 200 rápido para não reenviar Webhook
     res.status(200).send('OK');
 
@@ -298,6 +371,11 @@ exports.receberWebhook = async (req, res) => {
         const pagamentoMP = await consultarPagamento(paymentId);
         if (!pagamentoMP) return;
 
+        if (pagamentoMP.currency_id && pagamentoMP.currency_id !== 'BRL') {
+            console.warn(`[WEBHOOK] Moeda inválida: ${pagamentoMP.currency_id}`);
+            return;
+        }
+
         const reservaId = extrairReservaIdDeReferencia(pagamentoMP.external_reference);
         const statusMP = pagamentoMP.status;
 
@@ -308,7 +386,8 @@ exports.receberWebhook = async (req, res) => {
                 reservaId,
                 paymentId,
                 pagamentoMP.payment_method_id || 'CARTAO_CREDITO',
-                req.app
+                req.app,
+                pagamentoMP.transaction_amount
             );
         } else {
             let statusBanco = 'PENDENTE';
@@ -318,7 +397,7 @@ exports.receberWebhook = async (req, res) => {
             await db.query(
                 `UPDATE pag_pagamento 
                  SET Pag_Status = ?, Pag_TransacaoId = ?, Pag_DataHora = NOW()
-                 WHERE Res_Id = ?`,
+                 WHERE Res_Id = ? AND Pag_Status NOT IN ('APROVADO', 'REEMBOLSADO')`,
                 [statusBanco, String(paymentId), reservaId]
             );
         }
@@ -332,9 +411,8 @@ exports.receberWebhook = async (req, res) => {
  * POST /api/pagamentos/simular-aprovacao/:reservaId
  */
 exports.simularAprovacao = async (req, res) => {
-    // Só existe para testes locais. Sem PAGAMENTO_SIMULADO=true no .env, a rota se comporta como inexistente,
-    // impedindo que um hóspede confirme a própria reserva sem pagar em produção.
-    if (process.env.PAGAMENTO_SIMULADO !== 'true') {
+    // Bloqueada incondicionalmente em produção e quando PAGAMENTO_SIMULADO !== 'true'
+    if (process.env.NODE_ENV === 'production' || process.env.PAGAMENTO_SIMULADO !== 'true') {
         return res.status(404).json({ error: 'Rota não encontrada.' });
     }
 
@@ -358,6 +436,9 @@ exports.simularAprovacao = async (req, res) => {
         const reserva = reservas[0];
         if (reserva.Hos_Hospede_Usu_Id !== usuarioId && req.usuario.tipo !== 'proprietario') {
             return res.status(403).json({ error: 'Acesso negado.' });
+        }
+        if (reserva.Res_Status !== 'PAGAMENTO_PENDENTE') {
+            return res.status(400).json({ error: `Esta reserva está em status ${reserva.Res_Status} e não pode ser simulada.` });
         }
 
         const transacaoSimulada = `SIM_${Date.now()}`;

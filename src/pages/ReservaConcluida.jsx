@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { usePreferencias } from '../hooks/usePreferencias';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { API_BASE } from '../utils/api';
+import { API_BASE, IS_API_AVAILABLE } from '../utils/api';
 import '../components/home/home.css';
 import './ReservaConcluida.css';
 
@@ -23,7 +23,11 @@ function ReservaConcluida() {
   const [erro, setErro] = useState(false);
 
   useEffect(() => {
-    const url = API_BASE ? `${API_BASE}/api/reservas/${id}` : `http://localhost:3000/api/reservas/${id}`;
+    if (!IS_API_AVAILABLE) {
+      setErro(true);
+      return;
+    }
+    const url = `${API_BASE}/api/reservas/${encodeURIComponent(id)}`;
     fetch(url, { credentials: 'include' })
       .then(resposta => {
         if (!resposta.ok) {

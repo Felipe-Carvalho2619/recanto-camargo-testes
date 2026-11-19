@@ -29,7 +29,9 @@ function Login() {
     setErro('');
     const resultado = await login(dados.email, dados.senha);
     if (resultado.sucesso) {
-      navigate(location.state?.from || '/', { replace: true });
+      const from = location.state?.from;
+      const destinoSeguro = typeof from === 'string' && from.startsWith('/') && !from.startsWith('//') ? from : '/';
+      navigate(destinoSeguro, { replace: true });
     } else {
       setErro(resultado.mensagem);
       setDados(prev => ({ ...prev, senha: '' }));

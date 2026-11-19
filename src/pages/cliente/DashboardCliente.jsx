@@ -1397,7 +1397,7 @@ function DashboardCliente() {
           motivo: dados?.calculo?.descricaoRegra || motivo || r.motivo
         } : r
       );
-      salvarReservas(atualizadas);
+      if (!IS_API_AVAILABLE) salvarReservas(atualizadas);
       setModalCancelar(null);
       if (modalDetalhe && modalDetalhe.id === id) {
         setModalDetalhe(null);
@@ -1427,7 +1427,20 @@ function DashboardCliente() {
       }
       const linkPagamento = dados?.sandboxInitPoint || dados?.initPoint;
       if (linkPagamento) {
-        window.open(linkPagamento, '_blank');
+        let urlValida = false;
+        try {
+          const parsed = new URL(linkPagamento);
+          urlValida = parsed.protocol === 'https:' && (
+            parsed.hostname.endsWith('.mercadopago.com.br') ||
+            parsed.hostname.endsWith('.mercadopago.com')
+          );
+        } catch {
+          urlValida = false;
+        }
+        if (!urlValida) {
+          throw new Error(t('Link de pagamento inválido retornado pela operadora.'));
+        }
+        window.open(linkPagamento, '_blank', 'noopener,noreferrer');
         fb('sucesso', t('Guia do Mercado Pago aberta em uma nova aba.'));
       } else {
         throw new Error(t('Link de pagamento não retornado pela operadora.'));

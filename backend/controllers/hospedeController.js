@@ -24,14 +24,14 @@ exports.cancelarReserva = async (req, res) => {
         `, [reservaId, hospedeId]);
 
         if (reservas.length === 0) {
-            conexao.release();
+            await conexao.rollback();
             return res.status(404).json({ error: 'Reserva não encontrada ou não pertence a você.' });
         }
 
         const reserva = reservas[0];
         const statusAtual = reserva.Res_Status;
         if (statusAtual === 'CANCELADA' || statusAtual === 'RECUSADA' || statusAtual === 'CONCLUIDA') {
-            conexao.release();
+            await conexao.rollback();
             return res.status(400).json({ error: `Não é possível cancelar uma reserva que já está ${statusAtual}.` });
         }
 
@@ -51,14 +51,23 @@ exports.cancelarReserva = async (req, res) => {
             if (pagamentos.length > 0 && calculo.valorReembolso > 0) {
                 const pagamento = pagamentos[0];
                 if (pagamento.Pag_TransacaoId) {
-                    try {
-                        const resultadoRefund = await reembolsarPagamento(pagamento.Pag_TransacaoId, calculo.valorReembolso);
-                        refundId = String(resultadoRefund?.id || resultadoRefund?.data?.id || `refund_${Date.now()}`);
+                    if (String(pagamento.Pag_TransacaoId).startsWith('SIM_')) {
+                        refundId = `SIM_REFUND_${Date.now()}`;
                         estornoRealizado = true;
-                    } catch (errMP) {
-                        console.warn(`Aviso Mercado Pago no cancelamento do hóspede ${pagamento.Pag_TransacaoId}:`, errMP.message);
-                        refundId = `sandbox_refund_${Date.now()}`;
-                        estornoRealizado = true;
+                    } else {
+                        try {
+                            const resultadoRefund = await reembolsarPagamento(pagamento.Pag_TransacaoId, calculo.valorReembolso);
+                            const idReembolso = resultadoRefund?.id || resultadoRefund?.data?.id;
+                            if (!idReembolso) throw new Error('Mercado Pago não retornou o identificador do estorno.');
+                            refundId = String(idReembolso);
+                            estornoRealizado = true;
+                        } catch (errMP) {
+                            console.error(`[ESTORNO FALHOU] reserva=${reservaId} pagamento=${pagamento.Pag_Id}:`, errMP?.message || errMP);
+                            await conexao.rollback();
+                            return res.status(502).json({
+                                error: 'Não foi possível processar o estorno agora, então a reserva não foi cancelada. Tente novamente em instantes.'
+                            });
+                        }
                     }
 
                     const novoPagStatus = calculo.valorReembolso >= Number(pagamento.Pag_Valor) ? 'REEMBOLSADO' : 'APROVADO';

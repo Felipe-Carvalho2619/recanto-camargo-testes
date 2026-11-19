@@ -408,15 +408,20 @@ exports.cancelarReservaComReembolso = async (req, res) => {
         if (pagamentos.length > 0 && calculo.valorReembolso > 0) {
             const pagamento = pagamentos[0];
             if (pagamento.Pag_TransacaoId) {
-                try {
-                    const resultadoRefund = await reembolsarPagamento(pagamento.Pag_TransacaoId, calculo.valorReembolso);
-                    refundId = String(resultadoRefund?.id || resultadoRefund?.data?.id || `refund_${Date.now()}`);
+                if (String(pagamento.Pag_TransacaoId).startsWith('SIM_')) {
+                    refundId = `SIM_REFUND_${Date.now()}`;
                     estornoRealizado = true;
-                } catch (errMP) {
-                    console.warn(`Aviso: falha na chamada Mercado Pago para o pagamento ${pagamento.Pag_TransacaoId}:`, errMP.message);
-                    // Em ambiente de teste/sandbox, se o Mercado Pago recusar por restrição de conta de teste, gera identificador simulado
-                    refundId = `sandbox_refund_${Date.now()}`;
-                    estornoRealizado = true;
+                } else {
+                    try {
+                        const resultadoRefund = await reembolsarPagamento(pagamento.Pag_TransacaoId, calculo.valorReembolso);
+                        const idReembolso = resultadoRefund?.id || resultadoRefund?.data?.id;
+                        if (!idReembolso) throw new Error('Mercado Pago não retornou o identificador do estorno.');
+                        refundId = String(idReembolso);
+                        estornoRealizado = true;
+                    } catch (errMP) {
+                        console.error(`[ESTORNO FALHOU] reserva=${reservaId} pagamento=${pagamento.Pag_Id}:`, errMP?.message || errMP);
+                        throw new ErroHttp(502, 'Não foi possível processar o estorno no Mercado Pago, então a reserva não foi cancelada. Tente novamente em instantes.');
+                    }
                 }
 
                 // Atualiza pag_pagamento para REEMBOLSADO
@@ -832,6 +837,9 @@ exports.criarBloqueio = async (req, res) => {
 
         const { id: imoId } = await resolverImovel(conexao, imovelId, { proprietarioId, somenteAtivo: false });
 
+        await conexao.beginTransaction();
+        await conexao.query('SELECT Imo_Id FROM imo_imovel WHERE Imo_Id = ? FOR UPDATE', [imoId]);
+
         // Se dataInicio === fim (bloqueio de 1 dia), o fim efetivo para o intervalo [inicio, fim) é o dia seguinte.
         // Se dataInicio < fim, o intervalo é [dataInicio, fim) onde fim é a data de término/desocupação do bloqueio.
         let dataFimEfetivo = fim;
@@ -858,6 +866,7 @@ exports.criarBloqueio = async (req, res) => {
         );
 
         if (reservasConflitantes.length > 0) {
+            await conexao.rollback();
             return res.status(409).json({
                 error: 'Não é possível bloquear o período: existem reservas ativas ou pendentes nestas datas.',
                 conflitos: reservasConflitantes.map(r => ({
@@ -888,6 +897,8 @@ exports.criarBloqueio = async (req, res) => {
             );
         }
 
+        await conexao.commit();
+
         res.status(201).json({
             message: 'Período bloqueado com sucesso.',
             dataInicio,
@@ -897,6 +908,7 @@ exports.criarBloqueio = async (req, res) => {
             motivo: motivoCompleto
         });
     } catch (error) {
+        if (conexao) await conexao.rollback().catch(() => {});
         if (error instanceof ErroHttp) {
             return res.status(error.status).json({ error: error.message });
         }
@@ -1637,17 +1649,19 @@ exports.removerDataEspecial = async (req, res) => {
     try {
         await garantirProprietario(db, req.usuario.id);
         const id = normalizarIdPositivo(req.params.id, 'Identificador da data especial');
+        const [donos] = await db.query(
+            `SELECT d.Dat_Id FROM dat_datadinamica d
+             JOIN imo_imovel i ON i.Imo_Id = d.Imo_Id
+             WHERE d.Dat_Id = ? AND i.Pro_Proprietario_Usu_Id = ? LIMIT 1`,
+            [id, req.usuario.id]
+        );
+        if (donos.length === 0) return res.status(404).json({ error: 'Data especial não encontrada.' });
+
         const [historicos] = await db.query('SELECT 1 FROM hit_historicovalores WHERE Dat_Id = ? LIMIT 1', [id]);
         if (historicos.length > 0) {
             await db.query('UPDATE hit_historicovalores SET Dat_Id = NULL WHERE Dat_Id = ?', [id]);
         }
-        const [resultado] = await db.query(
-            `DELETE d FROM dat_datadinamica d
-             JOIN imo_imovel i ON i.Imo_Id = d.Imo_Id
-             WHERE d.Dat_Id = ? AND i.Pro_Proprietario_Usu_Id = ?`,
-            [id, req.usuario.id]
-        );
-        if (resultado.affectedRows === 0) return res.status(404).json({ error: 'Data especial não encontrada.' });
+        await db.query('DELETE FROM dat_datadinamica WHERE Dat_Id = ?', [id]);
         res.json({ message: 'Data especial removida.', id });
     } catch (error) {
         if (error instanceof ErroHttp) return res.status(error.status).json({ error: error.message });

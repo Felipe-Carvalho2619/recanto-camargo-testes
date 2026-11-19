@@ -25,6 +25,7 @@ const banco = {
     async query(sql, parametros) {
         const texto = sql.replace(/\s+/g, ' ').trim();
         estado.consultas.push({ sql: texto, parametros });
+        if (texto.startsWith('SELECT Usu_Status FROM usu_usuario')) return [[...(parametros[0] === 666 ? [] : [{ Usu_Status: 'ATIVO' }])]];
         if (texto.startsWith('SELECT Usu_Id FROM usu_usuario')) return [[...(parametros[0] === 666 ? [] : [{ Usu_Id: parametros[0] }])]];
         if (texto.startsWith('SELECT h.Usu_Id')) return [[{ Usu_Id: parametros[0] }]];
         if (texto.startsWith('SELECT Imo_Id, Imo_Nome, Imo_ValorFixo FROM imo_imovel')) {

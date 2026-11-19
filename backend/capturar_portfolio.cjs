@@ -61,8 +61,8 @@ async function capturarTelas() {
   await page.goto(`${baseUrl}/Login`);
   await page.waitForLoadState('networkidle');
 
-  await page.locator('input[type="email"]').fill('felipeteste@email.com');
-  await page.locator('input[type="password"]').fill('Felipe123.');
+  await page.locator('input[type="email"]').fill(process.env.TEST_GUEST_EMAIL || '');
+  await page.locator('input[type="password"]').fill(process.env.TEST_GUEST_PASSWORD || '');
 
   const loginPromise = page.waitForResponse(
     res => res.url().includes('/api/usuarios/login') && res.status() === 200,

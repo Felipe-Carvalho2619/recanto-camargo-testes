@@ -33,6 +33,11 @@ const bancoMock = {
         const texto = sql.replace(/\s+/g, ' ').trim();
         estado.consultas.push({ sql: texto, parametros });
 
+        // Validação de status do usuário (verificarToken)
+        if (texto.startsWith('SELECT Usu_Status FROM usu_usuario')) {
+            return [[{ Usu_Status: 'ATIVO' }]];
+        }
+
         // Validação de proprietário
         if (texto.startsWith('SELECT p.Usu_Id FROM pro_proprietario')) {
             const id = parametros[0];
