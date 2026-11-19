@@ -65,7 +65,7 @@
 
 .rc-btn-light {
   background: #ffffff;
-  color: var(--rc-ink);
+  color: #202020;
 }
 
 .rc-btn-ghost {
@@ -197,9 +197,25 @@
   color: var(--rc-ink);
 }
 
-/* Hero: o título e textos sobre a foto devem ser sempre brancos em qualquer tema */
+/* Hero e seções de fundo escuro/azul (Experiência e Localização): títulos sempre brancos em qualquer tema */
 .rc-hero h1,
 .rc-hero-copy h1,
-.rc-hero p.rc-sub {
+.rc-hero p.rc-sub,
+.rc-faixa-azul h1,
+.rc-faixa-azul h2,
+.rc-faixa-azul h3,
+.rc-faixa-azul h4,
+.rc-loc h1,
+.rc-loc h2,
+.rc-loc h3,
+.rc-loc h4 {
   color: #ffffff !important;
+}
+
+/* Faixa laranja (BlocoReserva): títulos sempre escuros para manter alto contraste nos dois temas */
+.rc-faixa-laranja h1,
+.rc-faixa-laranja h2,
+.rc-faixa-laranja h3,
+.rc-faixa-laranja h4 {
+  color: #1a0b00 !important;
 }

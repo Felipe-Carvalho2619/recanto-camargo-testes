@@ -104,6 +104,7 @@
 .rc-am i{color:var(--rc-u1);font-size:1.15rem;width:22px}
 /* location */
 .rc-loc{background:var(--rc-u2);color:#fff;border-radius:32px;margin:0 16px;padding:72px 0}
+.rc-loc h1,.rc-loc h2,.rc-loc h3{color:#fff}
 .rc-loc .rc-eyebrow{color:rgba(255,255,255,.7)}
 .rc-loc-grid{display:grid;grid-template-columns:1fr 1.1fr;gap:56px;align-items:center}
 .rc-route{display:flex;align-items:center;gap:12px;margin:28px 0;flex-wrap:wrap}
@@ -292,6 +293,7 @@ body.rc-home-ativo .btn-whats-flutuante{display:none}
 .rc-eyebrow{color:var(--rc-u1-text)}
 .rc-home .rc-faixa{padding:88px 0}
 .rc-faixa-azul{background:var(--rc-u2);color:#fff}
+.rc-faixa-azul h1,.rc-faixa-azul h2,.rc-faixa-azul h3{color:#fff}
 .rc-faixa-azul .rc-eyebrow{color:var(--rc-u1)}
 .rc-faixa-azul .rc-lead{color:rgba(255,255,255,.88)}
 .rc-faixa-azul .rc-stats{border-color:rgba(255,255,255,.2)}
@@ -301,6 +303,7 @@ body.rc-home-ativo .btn-whats-flutuante{display:none}
 .rc-am i{color:var(--rc-btext)}
 .rc-am h3{color:var(--rc-btext)}
 .rc-faixa-laranja{background:var(--rc-u1);color:#1a0b00}
+.rc-faixa-laranja h1,.rc-faixa-laranja h2,.rc-faixa-laranja h3{color:#1a0b00}
 .rc-faixa-laranja .rc-eyebrow{color:#1a0b00}
 .rc-faixa-laranja .rc-lead{color:#1a0b00;font-weight:500}
 .rc-faixa-laranja .rc-book{background:transparent;border:0;box-shadow:none;padding:0}
