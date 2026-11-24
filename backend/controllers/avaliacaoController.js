@@ -178,7 +178,6 @@ exports.listarPublicas = async (req, res) => {
                 a.Ava_CustoBeneficio AS custoBeneficio,
                 a.Ava_Comentario AS comentario,
                 DATE_FORMAT(a.Ava_Data, '%Y-%m-%d') AS data,
-                u.Usu_Nome AS hospedeNome,
                 NULL AS respostaNota,
                 a.Ava_ComentarioPropietario AS respostaComentario,
                 DATE_FORMAT(a.Ava_DataPropietario, '%Y-%m-%d') AS respostaData
@@ -187,7 +186,6 @@ exports.listarPublicas = async (req, res) => {
                 ON r.Res_Id = a.Res_Id
                 AND r.Imo_Id = a.Imo_Id
                 AND r.Hos_Hospede_Usu_Id = a.Usu_Hos_Id
-             INNER JOIN usu_usuario u ON u.Usu_Id = a.Usu_Hos_Id
              WHERE a.Imo_Id = ? AND r.Res_Status = ?
              ORDER BY a.Ava_Data DESC, a.Ava_Id DESC`,
             [imovelId, 'CONCLUIDA']
@@ -203,7 +201,7 @@ exports.listarPublicas = async (req, res) => {
             comentario: a.comentario || '',
             data: a.data,
             hospede: {
-                nome: a.hospedeNome || 'Hóspede verificado',
+                nome: 'Hóspede verificado',
                 verificado: true
             },
             respostaProprietario: a.respostaComentario ? {
