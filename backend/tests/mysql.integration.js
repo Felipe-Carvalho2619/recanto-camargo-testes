@@ -29,6 +29,9 @@ test('MySQL real: reserva pendente, persistência, isolamento, concorrência e d
         const dataSaida = new Date(checkin.getTime() + 86400000).toISOString().slice(0, 10);
         let reservaId;
         await t.test('reserva nasce pendente com preço do servidor e persiste dois avisos', async () => {
+            const parametros = new URLSearchParams({ checkin: dataEntrada, checkout: dataSaida });
+            const cotacao = await api(`/api/reservas/cotacao?${parametros}`);
+            assert.equal(cotacao.status, 200);
             const reserva = await api('/api/reservas', guest, 'POST', {
                 checkin: dataEntrada, checkout: dataSaida, hospedes: 2, valorTotal: 1
             });
@@ -36,7 +39,7 @@ test('MySQL real: reserva pendente, persistência, isolamento, concorrência e d
             reservaId = reserva.data.reservaId;
             const [rows] = await qa.admin.query('SELECT Res_Status, Res_ValorTotal FROM res_reserva WHERE Res_Id = ?', [reservaId]);
             assert.equal(rows[0].Res_Status, 'PENDENTE');
-            assert.equal(Number(rows[0].Res_ValorTotal), 200);
+            assert.equal(Number(rows[0].Res_ValorTotal), Number(cotacao.data.total));
             const [avisos] = await qa.admin.query('SELECT Usu_Id FROM not_notificacao ORDER BY Usu_Id');
             assert.deepEqual(avisos.map(n => n.Usu_Id), [1, 2]);
             assert.equal((await api('/api/notificacoes', other)).data.notificacoes.length, 0);

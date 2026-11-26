@@ -1,5 +1,7 @@
 const crypto = require('crypto');
-require('dotenv').config();
+if (process.env.RC_TEST_ISOLATION !== '1' && process.env.NODE_ENV !== 'test') {
+    require('dotenv').config();
+}
 
 function encryptCPF(cpfPlano) {
     const iv = crypto.randomBytes(12);

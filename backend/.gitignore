@@ -12,6 +12,8 @@ npm-debug.log*
 .env.development
 .env.test
 .env.production
+.env.qa
+.env.qa.*
 .env.keys
 
 # Arquivos de sistema operacional
