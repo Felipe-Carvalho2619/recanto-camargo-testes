@@ -44,6 +44,126 @@ test('envio bem-sucedido usa remetente configurado e chave de idempotência', as
     assert.equal(envios[0][1].idempotencyKey, 'reserva-123-hospede');
 });
 
+test('REV-01: override não autorizado é fail-closed sem instanciar SDK nem chamar provider', async t => {
+    const destinatario = 'original-rev01@example.invalid';
+    const override = 'override-rev01@example.invalid';
+    const cenarios = [
+        { rotulo: 'production', NODE_ENV: 'production', RESEND_ALLOW_OVERRIDE_IN_TESTS: 'true' },
+        { rotulo: 'staging', NODE_ENV: 'staging', RESEND_ALLOW_OVERRIDE_IN_TESTS: 'true' },
+        { rotulo: 'development', NODE_ENV: 'development', RESEND_ALLOW_OVERRIDE_IN_TESTS: 'true' },
+        { rotulo: 'NODE_ENV ausente', RESEND_ALLOW_OVERRIDE_IN_TESTS: 'true' },
+        { rotulo: 'test sem flag', NODE_ENV: 'test' }
+    ];
+
+    for (const cenario of cenarios) {
+        await t.test(cenario.rotulo, async () => {
+            const log = capturarLog();
+            let instancias = 0;
+            let chamadas = 0;
+            class ResendInesperado {
+                constructor() {
+                    instancias += 1;
+                    this.emails = { send: async () => { chamadas += 1; } };
+                }
+            }
+            const envCenario = {
+                ...env,
+                ...cenario,
+                RESEND_OVERRIDE_EMAIL: override
+            };
+            delete envCenario.rotulo;
+            const { enviarEmail } = criarServicoEmail({
+                env: envCenario,
+                logger: log.logger,
+                ResendClass: ResendInesperado
+            });
+            const resultado = await enviarEmail(
+                destinatario,
+                'Assunto sintético',
+                '<p>Conteúdo sintético</p>',
+                'rev-01-override'
+            );
+            assert.deepEqual(resultado, { enviado: false, motivo: 'override_nao_autorizado' });
+            assert.equal(instancias, 0);
+            assert.equal(chamadas, 0);
+            const textoLog = JSON.stringify(log.mensagens);
+            assert.equal(textoLog.includes(destinatario), false);
+            assert.equal(textoLog.includes(override), false);
+            assert.equal(textoLog.includes(env.RESEND_API_KEY), false);
+            assert.equal(textoLog.includes('Conteúdo sintético'), false);
+        });
+    }
+});
+
+test('REV-01: teste com flag autoriza fake, redireciona e prefixa o assunto', async () => {
+    const envios = [];
+    let instancias = 0;
+    class ResendFake {
+        constructor() {
+            instancias += 1;
+            this.emails = {
+                send: async (...args) => {
+                    envios.push(args);
+                    return { data: { id: 'rev-01-autorizado' }, error: null };
+                }
+            };
+        }
+    }
+    const { enviarEmail } = criarServicoEmail({
+        env: {
+            ...env,
+            NODE_ENV: 'test',
+            RESEND_ALLOW_OVERRIDE_IN_TESTS: 'true',
+            RESEND_OVERRIDE_EMAIL: '  caixa-rev01@example.invalid  '
+        },
+        ResendClass: ResendFake,
+        logger: capturarLog().logger
+    });
+    const resultado = await enviarEmail(
+        'destino-original-rev01@example.invalid',
+        'Recuperação sintética',
+        '<p>Fluxo fake</p>',
+        'rev-01-autorizado'
+    );
+    assert.deepEqual(resultado, { enviado: true });
+    assert.equal(instancias, 1);
+    assert.equal(envios.length, 1);
+    assert.deepEqual(envios[0][0].to, ['caixa-rev01@example.invalid']);
+    assert.equal(envios[0][0].subject, '[destino-original-rev01@example.invalid] Recuperação sintética');
+    assert.equal(envios[0][1].idempotencyKey, 'rev-01-autorizado');
+});
+
+test('REV-01: override vazio ou ausente preserva o fluxo transacional normal', async () => {
+    for (const override of [undefined, '', '   ']) {
+        const envios = [];
+        class ResendFake {
+            constructor() {
+                this.emails = {
+                    send: async (...args) => {
+                        envios.push(args);
+                        return { data: { id: 'rev-01-normal' }, error: null };
+                    }
+                };
+            }
+        }
+        const { enviarEmail } = criarServicoEmail({
+            env: { ...env, NODE_ENV: 'production', RESEND_OVERRIDE_EMAIL: override },
+            ResendClass: ResendFake,
+            logger: capturarLog().logger
+        });
+        const resultado = await enviarEmail(
+            'transacional@example.invalid',
+            'Assunto transacional',
+            '<p>Transacional</p>',
+            'rev-01-normal'
+        );
+        assert.deepEqual(resultado, { enviado: true });
+        assert.equal(envios.length, 1);
+        assert.deepEqual(envios[0][0].to, ['transacional@example.invalid']);
+        assert.equal(envios[0][0].subject, 'Assunto transacional');
+    }
+});
+
 for (const modo of ['erro retornado pela API', 'exceção de rede']) {
     test(`${modo} não propaga falha nem registra chave, destinatário ou corpo`, async () => {
         const log = capturarLog();

@@ -16,17 +16,21 @@ export function ContextoAutenticacao({ children }) {
     }
     fetch(`${API_BASE}/api/usuarios/sessao`, { credentials: 'include' })
       .then(res => {
-        if (!res.ok) throw new Error('Não autenticado');
+        if (!res.ok) throw new Error('Falha ao verificar sessão');
         return res.json();
       })
       .then(data => {
-        setUsuario(data.usuario);
+        if (data?.usuario === null) {
+          try {
+            localStorage.removeItem('recanto_reservas_cliente');
+          } catch { /* ignore */ }
+          setUsuario(null);
+          return;
+        }
+        if (data?.usuario) setUsuario(data.usuario);
       })
       .catch(() => {
-        try {
-      localStorage.removeItem('recanto_reservas_cliente');
-    } catch { /* ignore */ }
-    setUsuario(null);
+        // Rede ou indisponibilidade (ex.: 503) não comprovam transição para não autenticado.
       })
       .finally(() => {
         setCarregando(false);

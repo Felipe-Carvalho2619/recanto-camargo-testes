@@ -5,10 +5,14 @@ const cookieParser = require('cookie-parser');
 const db = require('./config/db');
 const { criarVerificadorOrigem } = require('./utils/configuracaoWeb');
 const { criarServicoNotificacoes } = require('./notificacoes');
-const { criarServicoEmail, criarHtmlEmail, criarEmailBoasVindas, criarEmailCupomExclusivo } = require('./email');
+const { criarServicoEmail, criarHtmlEmail, criarEmailBoasVindas, criarEmailCupomExclusivo, criarEmailRecuperacaoSenha } = require('./email');
 const { errorHandler } = require('./middlewares/errorHandler');
 const { processarLembretesPreCheckin, processarConvitesPosCheckoutAvaliacao } = require('./services/lembreteService');
 const { processarCancelamentoReservasAbandonadas } = require('./services/housekeepingService');
+const { criarSessionService } = require('./services/sessionService');
+const { criarRecuperacaoSenhaService } = require('./services/recuperacaoSenhaService');
+const { criarRecuperacaoSenhaOutboxService } = require('./services/recuperacaoSenhaOutboxService');
+const { criarRecuperacaoSenhaRateLimitService } = require('./services/recuperacaoSenhaRateLimitService');
 
 // --- ROTAS ---
 const authRoutes = require('./routes/authRoutes');
@@ -42,8 +46,22 @@ app.use(cookieParser());
 // --- SERVIÇOS COMPARTILHADOS (acessíveis via req.app.get) ---
 const notificacoes = criarServicoNotificacoes(db);
 const { enviarEmail } = criarServicoEmail();
+const emailService = { enviarEmail, criarHtmlEmail, criarEmailBoasVindas, criarEmailCupomExclusivo, criarEmailRecuperacaoSenha };
+const sessionService = criarSessionService({ db });
+const recuperacaoSenhaService = criarRecuperacaoSenhaService({ db });
+const recuperacaoSenhaRateLimitService = criarRecuperacaoSenhaRateLimitService({ db });
+const recuperacaoSenhaOutboxService = criarRecuperacaoSenhaOutboxService({
+    db,
+    emailService,
+    recuperacaoSenhaService,
+    rateLimitService: recuperacaoSenhaRateLimitService
+});
 app.set('notificacoes', notificacoes);
-app.set('emailService', { enviarEmail, criarHtmlEmail, criarEmailBoasVindas, criarEmailCupomExclusivo });
+app.set('emailService', emailService);
+app.set('sessionService', sessionService);
+app.set('recuperacaoSenhaService', recuperacaoSenhaService);
+app.set('recuperacaoSenhaRateLimitService', recuperacaoSenhaRateLimitService);
+app.set('recuperacaoSenhaOutboxService', recuperacaoSenhaOutboxService);
 
 // --- MONTAGEM DAS ROTAS ---
 app.use('/api/usuarios', authRoutes);
@@ -64,6 +82,7 @@ const PORT = process.env.PORT || 3000;
 if (require.main === module) {
     app.listen(PORT, () => {
         console.log(`🚀 Servidor rodando na porta ${PORT}`);
+        recuperacaoSenhaOutboxService.iniciar();
 
         // Rotina periódica em segundo plano (Lembretes, Convites de Avaliação e Housekeeping - a cada 1h)
         const INTERVALO_ROTINAS_MS = 1 * 60 * 60 * 1000;

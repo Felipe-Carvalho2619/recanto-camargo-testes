@@ -11,6 +11,26 @@ import { useAutenticacao } from '../hooks/useAutenticacao';
 import logoPng from '../assets/img/artes/logo.webp';
 import basilicaPng from '../assets/img/artes/basilica.webp';
 
+function normalizarDigitos(valor) {
+  return valor.replace(/\D/g, '').slice(0, 11);
+}
+
+function formatarCpf(cpf) {
+  if (cpf.length <= 3) return cpf;
+  if (cpf.length <= 6) return `${cpf.slice(0, 3)}.${cpf.slice(3)}`;
+  if (cpf.length <= 9) return `${cpf.slice(0, 3)}.${cpf.slice(3, 6)}.${cpf.slice(6)}`;
+  return `${cpf.slice(0, 3)}.${cpf.slice(3, 6)}.${cpf.slice(6, 9)}-${cpf.slice(9)}`;
+}
+
+function formatarTelefone(telefone) {
+  if (telefone.length <= 2) return telefone;
+  if (telefone.length <= 6) return `(${telefone.slice(0, 2)}) ${telefone.slice(2)}`;
+  if (telefone.length <= 10) {
+    return `(${telefone.slice(0, 2)}) ${telefone.slice(2, 6)}-${telefone.slice(6)}`;
+  }
+  return `(${telefone.slice(0, 2)}) ${telefone.slice(2, 7)}-${telefone.slice(7)}`;
+}
+
 function Cadastro() {
   const { t } = usePreferencias();
   const [dados, setDados] = useState({
@@ -28,9 +48,11 @@ function Cadastro() {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+    const campoComMascara = name === 'cpf' || name === 'telefone';
+    const valorNormalizado = campoComMascara ? normalizarDigitos(value) : value;
     setDados(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === 'checkbox' ? checked : valorNormalizado
     }));
   };
 
@@ -126,9 +148,10 @@ function Cadastro() {
         <Entrada
           tipo="text"
           nome="cpf"
-          placeholder={t("Seu CPF (somente números)")}
-          valor={dados.cpf}
+          placeholder={t("Seu CPF")}
+          valor={formatarCpf(dados.cpf)}
           onChange={handleChange}
+          inputMode="numeric"
           required
         />
         
@@ -145,8 +168,9 @@ function Cadastro() {
           tipo="tel"
           nome="telefone"
           placeholder={t("Insira seu telefone")}
-          valor={dados.telefone}
+          valor={formatarTelefone(dados.telefone)}
           onChange={handleChange}
+          inputMode="tel"
           required
         />
 

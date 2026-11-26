@@ -33,6 +33,9 @@ router.post('/login', loginLimiter, authController.login);
 router.get('/sessao', authController.sessao);
 router.post('/logout', authController.logout);
 
+router.post('/recuperacao-senha', authController.solicitarRecuperacaoSenha);
+router.post('/recuperacao-senha/confirmar', authController.confirmarRecuperacaoSenha);
+
 router.get('/perfil', verificarToken, authController.obterPerfil);
 router.put('/perfil', verificarToken, authController.atualizarPerfil);
 router.put('/senha', verificarToken, senhaLimiter, authController.alterarSenha);

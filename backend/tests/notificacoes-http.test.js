@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const jwt = require('jsonwebtoken');
+const { criarSessionService } = require('../services/sessionService');
 const emailOriginal = require('../email');
 
 let estado;
@@ -15,6 +15,8 @@ function reiniciar() {
 }
 reiniciar();
 
+const SENHA_HASH_TESTE = 'hash-sintetico-somente-testes-notificacoes-http';
+
 const banco = {
     async getConnection() { return this; },
     async beginTransaction() { estado.transacao = true; estado.eventos.push('begin'); },
@@ -25,7 +27,18 @@ const banco = {
     async query(sql, parametros) {
         const texto = sql.replace(/\s+/g, ' ').trim();
         estado.consultas.push({ sql: texto, parametros });
-        if (texto.startsWith('SELECT Usu_Status FROM usu_usuario')) return [[...(parametros[0] === 666 ? [] : [{ Usu_Status: 'ATIVO' }])]];
+        if (texto.startsWith('SELECT usu.Usu_Id, usu.Usu_Nome, usu.Usu_Status, usu.Usu_SenhaHash')) {
+            assert.match(texto, /CASE WHEN EXISTS \(\s*SELECT 1 FROM pro_proprietario AS pro/);
+            const id = Number(parametros[0]);
+            if (id === 666) return [[]];
+            return [[{
+                Usu_Id: id,
+                Usu_Nome: 'Hóspede sintético do banco',
+                Usu_Status: 'ATIVO',
+                Usu_SenhaHash: SENHA_HASH_TESTE,
+                Usu_Tipo: 'hospede'
+            }]];
+        }
         if (texto.startsWith('SELECT Usu_Id FROM usu_usuario')) return [[...(parametros[0] === 666 ? [] : [{ Usu_Id: parametros[0] }])]];
         if (texto.startsWith('SELECT h.Usu_Id')) return [[{ Usu_Id: parametros[0] }]];
         if (texto.startsWith('SELECT Imo_Id, Imo_Nome, Imo_ValorFixo FROM imo_imovel')) {
@@ -93,6 +106,7 @@ const dbAnterior = require.cache[caminhoDb];
 const emailAnterior = require.cache[caminhoEmail];
 const jwtAnterior = process.env.JWT_SECRET;
 process.env.JWT_SECRET = 'segredo-de-teste-local-sem-valor-em-producao';
+const sessaoTeste = criarSessionService({ db: banco, env: process.env });
 require.cache[caminhoDb] = { id: caminhoDb, filename: caminhoDb, loaded: true, exports: banco };
 require.cache[caminhoEmail] = { id: caminhoEmail, filename: caminhoEmail, loaded: true, exports: {
     ...emailOriginal,
@@ -125,7 +139,10 @@ test.after(async () => {
 });
 
 function cookie(id = 41, extras = {}) {
-    return `token=${jwt.sign({ id, tipo: 'hospede', ...extras }, process.env.JWT_SECRET, { expiresIn: '5m' })}`;
+    const { token } = sessaoTeste.criarTokenSessao({
+        id, nome: 'Hóspede sintético', tipo: 'hospede', ...extras
+    }, SENHA_HASH_TESTE);
+    return `token=${token}`;
 }
 async function chamar(caminho, { id = 41, token, method = 'GET', body } = {}) {
     const resposta = await fetch(`${base}${caminho}`, {

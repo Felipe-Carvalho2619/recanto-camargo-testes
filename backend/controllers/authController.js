@@ -1,33 +1,39 @@
 const db = require('../config/db');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const { encryptCPF, hashCPF } = require('../utils/crypto');
 const { emailValido, cpfValido } = require('../utils/validacoes');
 const { opcoesCookieSessao } = require('../utils/configuracaoWeb');
+const { validarComplexidadeSenha } = require('../utils/politicaSenha');
+const { criarSessionService } = require('../services/sessionService');
+const { criarRecuperacaoSenhaService } = require('../services/recuperacaoSenhaService');
+const { criarRecuperacaoSenhaRateLimitService } = require('../services/recuperacaoSenhaRateLimitService');
 
-function validarComplexidadeSenha(senha) {
-    if (!senha || typeof senha !== 'string') {
-        return 'Senha inválida.';
-    }
-    if (senha.length < 8) {
-        return 'A senha deve ter no mínimo 8 caracteres.';
-    }
-    if (senha.length > 100) {
-        return 'A senha não pode exceder 100 caracteres.';
-    }
-    if (!/[A-Z]/.test(senha)) {
-        return 'A senha deve conter pelo menos uma letra maiúscula.';
-    }
-    if (!/[a-z]/.test(senha)) {
-        return 'A senha deve conter pelo menos uma letra minúscula.';
-    }
-    if (!/\d/.test(senha)) {
-        return 'A senha deve conter pelo menos um número.';
-    }
-    if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(senha)) {
-        return 'A senha deve conter pelo menos um caractere especial (!@#$%...).';
-    }
-    return null;
+const sessionServicePadrao = criarSessionService({ db });
+const recuperacaoSenhaServicePadrao = criarRecuperacaoSenhaService({ db });
+const rateLimitServicePadrao = criarRecuperacaoSenhaRateLimitService({ db });
+
+function obterServico(req, nome, padrao) {
+    const injetado = req.app?.get ? req.app.get(nome) : null;
+    return injetado || padrao;
+}
+
+function definirCookieSessao(res, token) {
+    res.cookie('token', token, {
+        ...opcoesCookieSessao(),
+        maxAge: 7 * 24 * 60 * 60 * 1000
+    });
+}
+
+function obterIpRequisicao(req) {
+    // Express já limita a confiança ao trust proxy = 1 configurado no servidor.
+    return String(req.ip || req.socket?.remoteAddress || 'desconhecido');
+}
+
+function responderLimite(res, limite) {
+    if (limite.permitido) return false;
+    res.set('Retry-After', String(limite.retryAfter));
+    res.status(429).json({ error: 'Muitas tentativas. Tente novamente mais tarde.' });
+    return true;
 }
 
 exports.cadastrar = async (req, res) => {
@@ -263,7 +269,7 @@ exports.login = async (req, res) => {
 
         if (!usuario) {
             // Equaliza tempo de resposta contra enumeração por timing attack
-            await bcrypt.compare(senha, '$2b$10$dummyhashparaequalizartempoderesposta123456789012345');
+            await bcrypt.compare(senha, '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy');
             return res.status(401).json({ error: 'Credenciais inválidas.' });
         }
         if (usuario.Usu_Status !== 'ATIVO') return res.status(403).json({ error: 'Esta conta encontra-se inativa ou bloqueada.' });
@@ -286,34 +292,36 @@ exports.login = async (req, res) => {
         const [adminRows] = await db.query('SELECT * FROM pro_proprietario WHERE Usu_Id = ?', [usuario.Usu_Id]);
         const isAdmin = adminRows.length > 0;
 
-        const payload = { 
-            id: usuario.Usu_Id, 
+        const payload = {
+            id: usuario.Usu_Id,
             nome: usuario.Usu_Nome,
             tipo: isAdmin ? 'proprietario' : 'hospede'
         };
-        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' });
+        const sessao = obterServico(req, 'sessionService', sessionServicePadrao)
+            .criarTokenSessao(payload, usuario.Usu_SenhaHash);
+        definirCookieSessao(res, sessao.token);
 
-        res.cookie('token', token, {
-            ...opcoesCookieSessao(),
-            maxAge: 7 * 24 * 60 * 60 * 1000 
-        });
-
-        res.json({ message: 'Login realizado!', usuario: payload });
-    } catch (error) {
-        console.error('Erro no login:', error);
+        res.json({ message: 'Login realizado!', usuario: sessao.usuario });
+    } catch {
+        console.error('Erro no login.');
         res.status(500).json({ error: 'Erro interno no servidor.' });
     }
 };
 
-exports.sessao = (req, res) => {
+exports.sessao = async (req, res) => {
     const token = req.cookies?.token;
     if (!token) return res.status(200).json({ usuario: null });
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        res.json({ usuario: decoded });
-    } catch (err) {
-        res.status(200).json({ usuario: null, expirado: true });
+        const resultado = await obterServico(req, 'sessionService', sessionServicePadrao)
+            .validarTokenSessao(token);
+        if (resultado.motivo === 'indisponivel') {
+            return res.status(503).json({ error: 'Sessão temporariamente indisponível.' });
+        }
+        if (!resultado.ok) return res.status(200).json({ usuario: null, expirado: true });
+        return res.json({ usuario: resultado.usuario });
+    } catch {
+        return res.status(503).json({ error: 'Sessão temporariamente indisponível.' });
     }
 };
 
@@ -357,24 +365,19 @@ exports.atualizarPerfil = async (req, res) => {
             [nome.trim(), telefone ? telefone.trim() : '', req.usuario.id]
         );
 
-        const [adminRows] = await db.query('SELECT Usu_Id FROM pro_proprietario WHERE Usu_Id = ? LIMIT 1', [req.usuario.id]);
-        const novoPayload = {
-            id: req.usuario.id,
-            nome: nome.trim(),
-            tipo: adminRows.length > 0 ? 'proprietario' : 'hospede'
-        };
-        const token = jwt.sign(novoPayload, process.env.JWT_SECRET, { expiresIn: '7d' });
-        res.cookie('token', token, {
-            ...opcoesCookieSessao(),
-            maxAge: 7 * 24 * 60 * 60 * 1000
-        });
-
+        // Não reemitir JWT: uma sessão validada antes de um reset não pode ser
+        // promovida à época do novo hash por uma leitura posterior do banco.
         res.json({
             message: 'Perfil atualizado com sucesso!',
-            usuario: { ...novoPayload, telefone: telefone || '' }
+            usuario: {
+                id: req.usuario.id,
+                nome: nome.trim(),
+                tipo: req.usuario.tipo,
+                telefone: telefone || ''
+            }
         });
-    } catch (error) {
-        console.error('Erro ao atualizar perfil:', error);
+    } catch {
+        console.error('Erro ao atualizar perfil.');
         res.status(500).json({ error: 'Erro interno ao atualizar perfil.' });
     }
 };
@@ -398,23 +401,89 @@ exports.alterarSenha = async (req, res) => {
             return res.status(404).json({ error: 'Usuário não encontrado.' });
         }
 
-        const senhaCorreta = await bcrypt.compare(senhaAtual, usuarios[0].Usu_SenhaHash);
+        const hashValidado = usuarios[0].Usu_SenhaHash;
+        const senhaCorreta = await bcrypt.compare(senhaAtual, hashValidado);
         if (!senhaCorreta) {
             return res.status(400).json({ error: 'Senha atual incorreta.' });
         }
 
+        const sessionService = obterServico(req, 'sessionService', sessionServicePadrao);
+        sessionService.validarConfiguracao();
         const salt = await bcrypt.genSalt(10);
         const novoHash = await bcrypt.hash(novaSenha, salt);
 
-        await db.query(
-            'UPDATE usu_usuario SET Usu_SenhaHash = ? WHERE Usu_Id = ?',
-            [novoHash, req.usuario.id]
+        const [resultadoAtualizacao] = await db.query(
+            'UPDATE usu_usuario SET Usu_SenhaHash = ? WHERE Usu_Id = ? AND Usu_SenhaHash = ?',
+            [novoHash, req.usuario.id, hashValidado]
         );
+        if (resultadoAtualizacao.affectedRows !== 1) {
+            return res.status(409).json({
+                error: 'A senha foi alterada em outra sessão. Faça login novamente e tente novamente.'
+            });
+        }
 
+        const sessao = sessionService.criarTokenSessao({
+            id: req.usuario.id,
+            nome: req.usuario.nome,
+            tipo: req.usuario.tipo
+        }, novoHash);
+        // A nova época revoga os demais cookies; somente o atual é reemitido.
+        definirCookieSessao(res, sessao.token);
         res.json({ message: 'Senha alterada com sucesso!' });
-    } catch (error) {
-        console.error('Erro ao alterar senha:', error);
+    } catch {
+        console.error('Erro ao alterar senha.');
         res.status(500).json({ error: 'Erro interno ao alterar senha.' });
+    }
+};
+
+exports.solicitarRecuperacaoSenha = async (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    const email = typeof req.body?.email === 'string' ? req.body.email.trim() : '';
+    if (!emailValido(email)) {
+        return res.status(400).json({ error: 'E-mail inválido. Informe um endereço como nome@dominio.com.' });
+    }
+
+    try {
+        const recuperacao = obterServico(req, 'recuperacaoSenhaService', recuperacaoSenhaServicePadrao);
+        const rateLimit = obterServico(req, 'recuperacaoSenhaRateLimitService', rateLimitServicePadrao);
+        recuperacao.validarConfiguracaoGlobal();
+        const limite = await rateLimit.limitarSolicitacao({ ip: obterIpRequisicao(req), email });
+        if (responderLimite(res, limite)) return;
+
+        await recuperacao.solicitar({ email });
+        return res.status(202).json({
+            message: 'Solicitação recebida. Se o e-mail pertencer a uma conta elegível, enviaremos instruções.'
+        });
+    } catch {
+        console.error('[RF02 http] estado=INDISPONIVEL tentativas=0 codigo=solicitacao');
+        return res.status(503).json({ error: 'Serviço temporariamente indisponível. Tente novamente mais tarde.' });
+    }
+};
+
+exports.confirmarRecuperacaoSenha = async (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    try {
+        const recuperacao = obterServico(req, 'recuperacaoSenhaService', recuperacaoSenhaServicePadrao);
+        const rateLimit = obterServico(req, 'recuperacaoSenhaRateLimitService', rateLimitServicePadrao);
+        recuperacao.validarConfiguracaoGlobal();
+        const limite = await rateLimit.limitarConfirmacao({ ip: obterIpRequisicao(req) });
+        if (responderLimite(res, limite)) return;
+
+        await recuperacao.confirmar({
+            token: req.body?.token,
+            novaSenha: req.body?.novaSenha
+        });
+        res.clearCookie('token', opcoesCookieSessao());
+        return res.status(200).json({ message: 'Senha redefinida com sucesso! Faça login novamente.' });
+    } catch (erro) {
+        if (erro.codigo === 'POLITICA_SENHA') {
+            return res.status(400).json({ error: erro.mensagemPublica, code: 'POLITICA_SENHA' });
+        }
+        if (erro.codigo === 'TOKEN_INVALIDO') {
+            return res.status(400).json({ error: 'Link de recuperação inválido ou expirado.', code: 'TOKEN_INVALIDO' });
+        }
+        console.error('[RF02 http] estado=INDISPONIVEL tentativas=0 codigo=confirmacao');
+        return res.status(503).json({ error: 'Serviço temporariamente indisponível. Tente novamente mais tarde.' });
     }
 };
 

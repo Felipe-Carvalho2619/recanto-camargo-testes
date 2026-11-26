@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const jwt = require('jsonwebtoken');
+const { criarSessionService } = require('../services/sessionService');
 
 let estado;
 function reiniciar() {
@@ -22,6 +22,8 @@ function reiniciar() {
 }
 reiniciar();
 
+const SENHA_HASH_TESTE = 'hash-sintetico-somente-testes-bloqueios';
+
 const bancoMock = {
     async getConnection() { return this; },
     async beginTransaction() { estado.transacao = true; estado.eventos.push('begin'); },
@@ -33,9 +35,16 @@ const bancoMock = {
         const texto = sql.replace(/\s+/g, ' ').trim();
         estado.consultas.push({ sql: texto, parametros });
 
-        // Validação de status do usuário (verificarToken)
-        if (texto.startsWith('SELECT Usu_Status FROM usu_usuario')) {
-            return [[{ Usu_Status: 'ATIVO' }]];
+        if (texto.startsWith('SELECT usu.Usu_Id, usu.Usu_Nome, usu.Usu_Status, usu.Usu_SenhaHash')) {
+            assert.match(texto, /CASE WHEN EXISTS \(\s*SELECT 1 FROM pro_proprietario AS pro/);
+            const id = Number(parametros[0]);
+            return [[{
+                Usu_Id: id,
+                Usu_Nome: 'Usuário sintético do banco',
+                Usu_Status: 'ATIVO',
+                Usu_SenhaHash: SENHA_HASH_TESTE,
+                Usu_Tipo: id === 10 ? 'proprietario' : 'hospede'
+            }]];
         }
 
         // Validação de proprietário
@@ -136,6 +145,7 @@ const caminhoDb = require.resolve('../config/db');
 const dbAnterior = require.cache[caminhoDb];
 const jwtAnterior = process.env.JWT_SECRET;
 process.env.JWT_SECRET = 'segredo-de-teste-bloqueios';
+const sessaoTeste = criarSessionService({ db: bancoMock, env: process.env });
 require.cache[caminhoDb] = { id: caminhoDb, filename: caminhoDb, loaded: true, exports: bancoMock };
 const app = require('../server');
 if (dbAnterior) require.cache[caminhoDb] = dbAnterior;
@@ -159,14 +169,17 @@ test.after(async () => {
     else process.env.JWT_SECRET = jwtAnterior;
 });
 
+function tokenSessao(id, tipo) {
+    const { token } = sessaoTeste.criarTokenSessao({ id, nome: 'Usuário sintético', tipo }, SENHA_HASH_TESTE);
+    return `token=${token}`;
+}
+
 function tokenProprietario(id = 10) {
-    const t = jwt.sign({ id, tipo: 'proprietario' }, process.env.JWT_SECRET, { expiresIn: '10m' });
-    return `token=${t}`;
+    return tokenSessao(id, 'proprietario');
 }
 
 function tokenHospede(id = 41) {
-    const t = jwt.sign({ id, tipo: 'hospede' }, process.env.JWT_SECRET, { expiresIn: '10m' });
-    return `token=${t}`;
+    return tokenSessao(id, 'hospede');
 }
 
 async function requisicao(caminho, { method = 'GET', cookie, body } = {}) {

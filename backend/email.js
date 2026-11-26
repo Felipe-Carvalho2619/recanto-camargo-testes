@@ -582,24 +582,48 @@ function criarEmailCupomExclusivo(opcoes = {}) {
 </html>`;
 }
 
+function criarEmailRecuperacaoSenha({ nome, urlRecuperacao } = {}) {
+    const titulo = 'Recuperação de senha';
+    const mensagem = 'Recebemos uma solicitação para redefinir sua senha. O link é válido por 10 minutos e pode ser usado uma única vez. Se você não fez esta solicitação, ignore esta mensagem.';
+    return criarHtmlEmail(titulo, mensagem, {
+        nome,
+        badge: 'Segurança da conta',
+        botaoTexto: 'Redefinir senha',
+        botaoUrl: urlRecuperacao
+    });
+}
+
 function criarServicoEmail({ env = process.env, logger = console, ResendClass } = {}) {
     let cliente;
     let chaveAtual;
     let avisoSemChave = false;
     let avisoSemRemetente = false;
 
-    async function enviarEmail(destinatario, assunto, corpoHtml, chaveIdempotencia) {
+    async function enviarEmail(destinatario, assunto, corpoHtml, chaveIdempotencia, opcoes = {}) {
+        const emitirLogs = opcoes?.logs !== false;
+        const avisar = mensagem => { if (emitirLogs) logger.warn(mensagem); };
+        const registrarErro = mensagem => { if (emitirLogs) logger.error(mensagem); };
         try {
+            const overrideEmail = typeof env.RESEND_OVERRIDE_EMAIL === 'string'
+                ? env.RESEND_OVERRIDE_EMAIL.trim()
+                : '';
+            const overrideAutorizado = env.NODE_ENV === 'test'
+                && env.RESEND_ALLOW_OVERRIDE_IN_TESTS === 'true';
+            if (overrideEmail && !overrideAutorizado) {
+                registrarErro('Email não enviado: override de destinatário não autorizado neste ambiente.');
+                return { enviado: false, motivo: 'override_nao_autorizado' };
+            }
+
             const apiKey = env.RESEND_API_KEY?.trim();
             if (!apiKey) {
-                if (!avisoSemChave) logger.warn('RESEND_API_KEY não configurada, pulando envio de email');
-                avisoSemChave = true;
+                if (!avisoSemChave) avisar('RESEND_API_KEY não configurada, pulando envio de email');
+                if (emitirLogs) avisoSemChave = true;
                 return { enviado: false, motivo: 'sem_chave' };
             }
             const remetente = env.RESEND_FROM_EMAIL?.trim();
             if (!remetente) {
-                if (!avisoSemRemetente) logger.warn('RESEND_FROM_EMAIL não configurado, pulando envio de email');
-                avisoSemRemetente = true;
+                if (!avisoSemRemetente) avisar('RESEND_FROM_EMAIL não configurado, pulando envio de email');
+                if (emitirLogs) avisoSemRemetente = true;
                 return { enviado: false, motivo: 'sem_remetente' };
             }
             if (typeof destinatario !== 'string' || destinatario.length > 255
@@ -608,7 +632,7 @@ function criarServicoEmail({ env = process.env, logger = console, ResendClass } 
                 || typeof corpoHtml !== 'string'
                 || typeof chaveIdempotencia !== 'string' || !chaveIdempotencia
                 || chaveIdempotencia.length > 256) {
-                logger.error('Email não enviado: parâmetros internos inválidos.');
+                registrarErro('Email não enviado: parâmetros internos inválidos.');
                 return { enviado: false, motivo: 'parametros_invalidos' };
             }
 
@@ -621,7 +645,6 @@ function criarServicoEmail({ env = process.env, logger = console, ResendClass } 
                 chaveAtual = apiKey;
             }
 
-            const overrideEmail = env.RESEND_OVERRIDE_EMAIL?.trim();
             const destinatarioFinal = overrideEmail || destinatario;
             const assuntoFinal = overrideEmail ? `[${destinatario}] ${assunto}` : assunto;
 
@@ -637,13 +660,13 @@ function criarServicoEmail({ env = process.env, logger = console, ResendClass } 
 
             // O SDK também retorna falhas em { error }, sem lançar uma exceção.
             if (resultado?.error || !resultado?.data?.id) {
-                logger.error('Email não enviado: o provedor recusou ou não confirmou o envio.');
+                registrarErro('Email não enviado: o provedor recusou ou não confirmou o envio.');
                 return { enviado: false, motivo: 'falha_provedor' };
             }
             return { enviado: true };
         } catch {
             // Erros do provedor podem conter destinatários e dados de autenticação.
-            logger.error('Email não enviado: falha de comunicação com o provedor.');
+            registrarErro('Email não enviado: falha de comunicação com o provedor.');
             return { enviado: false, motivo: 'falha_comunicacao' };
         }
     }
@@ -651,4 +674,4 @@ function criarServicoEmail({ env = process.env, logger = console, ResendClass } 
     return { enviarEmail };
 }
 
-module.exports = { criarServicoEmail, criarHtmlEmail, criarEmailBoasVindas, criarEmailCupomExclusivo, escaparHtml };
+module.exports = { criarServicoEmail, criarHtmlEmail, criarEmailBoasVindas, criarEmailCupomExclusivo, criarEmailRecuperacaoSenha, escaparHtml };

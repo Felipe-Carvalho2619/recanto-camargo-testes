@@ -2,6 +2,8 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const authController = require('../controllers/authController');
 const { criarHtmlEmail } = require('../email');
+const bcrypt = require('bcryptjs');
+const db = require('../config/db');
 
 const {
     tentativasFalhasPorUsuario,
@@ -148,6 +150,58 @@ test('Camada 2 (Dual-Layer): bloqueia conta após 5 falhas mesmo se atacante alt
     assert.equal(estaContaBloqueada(usuarioTeste.Usu_Id), false, 'Sucesso deve liberar a conta do bloqueio');
 
     tentativasFalhasPorUsuario.delete(usuarioTeste.Usu_Id);
+});
+
+test('Login de usuário inexistente: bcrypt.compare real recebe hash fixo válido de custo 10', async () => {
+    const hashFixo = '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy';
+    const senhaSintetica = 'senha-sintetica-somente-teste';
+    const compareReal = bcrypt.compare;
+    const queryReal = db.query;
+    const chamadasCompare = [];
+    const chamadasQuery = [];
+    let resultadoCompare;
+
+    try {
+        assert.equal(hashFixo.length, 60);
+        assert.match(hashFixo, /^\$2b\$10\$[./A-Za-z0-9]{53}$/);
+        assert.equal(bcrypt.getRounds(hashFixo), 10);
+
+        bcrypt.compare = async (senha, hash) => {
+            chamadasCompare.push({ senha, hash });
+            resultadoCompare = await compareReal.call(bcrypt, senha, hash);
+            return resultadoCompare;
+        };
+        db.query = async (sql, parametros) => {
+            chamadasQuery.push({ sql, parametros });
+            return [[]];
+        };
+
+        const resposta = {
+            statusCode: 200,
+            corpo: null,
+            status(codigo) {
+                this.statusCode = codigo;
+                return this;
+            },
+            json(corpo) {
+                this.corpo = corpo;
+                return this;
+            }
+        };
+        const emailInexistente = 'usuario-inexistente@example.invalid';
+        await authController.login({ body: { email: emailInexistente, senha: senhaSintetica } }, resposta);
+
+        assert.equal(resposta.statusCode, 401);
+        assert.deepEqual(resposta.corpo, { error: 'Credenciais inválidas.' });
+        assert.equal(chamadasQuery.length, 1);
+        assert.deepEqual(chamadasQuery[0].parametros, [emailInexistente]);
+        assert.equal(chamadasCompare.length, 1, 'A ausência do usuário ainda deve executar uma comparação bcrypt');
+        assert.deepEqual(chamadasCompare[0], { senha: senhaSintetica, hash: hashFixo });
+        assert.equal(resultadoCompare, false, 'O resultado deve vir do processamento real do bcrypt, não de um stub');
+    } finally {
+        bcrypt.compare = compareReal;
+        db.query = queryReal;
+    }
 });
 
 test.after(async () => {

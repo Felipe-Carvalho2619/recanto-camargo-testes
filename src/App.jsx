@@ -61,8 +61,9 @@ function CarregandoPagina() {
 
 function RotaProtegida({ elemento, tipoRequerido }) {
   const { usuario } = useAutenticacao();
+  const location = useLocation();
 
-  if (!usuario) return <Navigate to="/Login" replace />;
+  if (!usuario) return <Navigate to="/Login" replace state={{ from: location.pathname + location.search }} />;
   if (tipoRequerido && usuario.tipo !== tipoRequerido) return <Navigate to="/" replace />;
 
   return elemento;
