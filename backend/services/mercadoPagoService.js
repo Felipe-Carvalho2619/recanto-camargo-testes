@@ -66,7 +66,7 @@ async function criarPreferenciaPagamento(reserva, usuario) {
             email: usuario.Usu_Email || 'hospede@recantocamargo.com.br'
         },
         back_urls: {
-            success: `${appFrontendUrl}/ReservaConcluida?reservaId=${reserva.Res_Id}`,
+            success: `${appFrontendUrl}/ReservaConcluida/${reserva.Res_Id}`,
             failure: `${appFrontendUrl}/DashboardCliente`,
             pending: `${appFrontendUrl}/DashboardCliente`
         },

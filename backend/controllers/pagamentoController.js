@@ -24,7 +24,7 @@ function verificarAssinaturaWebhook(req, secret) {
 /**
  * Helper atômico para efetivar a aprovação de pagamento de uma reserva no banco
  */
-async function efetivarAprovacaoPagamento(reservaId, transacaoId, metodo = 'PIX', app = null, valorPago = null) {
+async function efetivarAprovacaoPagamento(reservaId, transacaoId, metodo = 'PIX', app = null, valorPago = null, moeda = null) {
     let metodoBanco = 'PIX';
     const m = String(metodo).toLowerCase();
     if (m.includes('card') || m.includes('credit') || m.includes('master') || m.includes('visa')) {
@@ -55,33 +55,41 @@ async function efetivarAprovacaoPagamento(reservaId, transacaoId, metodo = 'PIX'
 
         if (reservaAtual.length === 0) {
             await conexao.rollback();
-            return;
+            return { confirmada: false, motivo: 'RESERVA_NAO_ENCONTRADA' };
         }
 
         const dadosReserva = reservaAtual[0];
         if (dadosReserva.Res_Status === 'CONFIRMADA') {
             await conexao.commit();
-            return;
+            return { confirmada: true, motivo: 'RESERVA_JA_CONFIRMADA' };
         }
         if (dadosReserva.Res_Status !== 'PAGAMENTO_PENDENTE') {
             console.warn(`[PAGAMENTO IGNORADO] Reserva #${reservaId} está em status ${dadosReserva.Res_Status}, não pode ser confirmada.`);
             await conexao.rollback();
-            return;
+            return { confirmada: false, motivo: 'STATUS_RESERVA_INVALIDO' };
         }
 
-        if (valorPago !== null && valorPago !== undefined) {
-            const centavosPagos = Math.round(Number(valorPago) * 100);
-            const centavosEsperados = Math.round(Number(dadosReserva.Res_ValorTotal) * 100);
-            if (!Number.isFinite(centavosPagos) || centavosPagos < centavosEsperados - 1) {
-                console.warn(`[DIVERGÊNCIA DE VALOR] Reserva #${reservaId}: esperado=${centavosEsperados}c, pago=${centavosPagos}c`);
-                await conexao.rollback();
-                return;
-            }
+        if (moeda !== 'BRL') {
+            console.warn(`[MOEDA INVÁLIDA] Reserva #${reservaId}: moeda=${moeda}`);
+            await conexao.rollback();
+            return { confirmada: false, motivo: 'MOEDA_INVALIDA_OU_AUSENTE' };
         }
 
-        const valorGravar = valorPago !== null && valorPago !== undefined
-            ? Number(valorPago)
-            : Number(dadosReserva.Res_ValorTotal || 0);
+        const valorAusente = valorPago === null || valorPago === undefined || valorPago === '';
+        const centavosPagos = Math.round(Number(valorPago) * 100);
+        const centavosEsperados = Math.round(Number(dadosReserva.Res_ValorTotal) * 100);
+        if (valorAusente || !Number.isFinite(centavosPagos) || !Number.isFinite(centavosEsperados)) {
+            console.warn(`[VALOR INVÁLIDO] Reserva #${reservaId}: esperado=${centavosEsperados}c, pago=${centavosPagos}c`);
+            await conexao.rollback();
+            return { confirmada: false, motivo: 'VALOR_PAGO_AUSENTE_OU_INVALIDO' };
+        }
+        if (centavosPagos !== centavosEsperados) {
+            console.warn(`[DIVERGÊNCIA DE VALOR] Reserva #${reservaId}: esperado=${centavosEsperados}c, pago=${centavosPagos}c`);
+            await conexao.rollback();
+            return { confirmada: false, motivo: 'VALOR_PAGO_DIVERGENTE' };
+        }
+
+        const valorGravar = Number(valorPago);
 
         const [pagamentos] = await conexao.query(
             `SELECT Pag_Id FROM pag_pagamento WHERE Res_Id = ? FOR UPDATE`,
@@ -90,14 +98,14 @@ async function efetivarAprovacaoPagamento(reservaId, transacaoId, metodo = 'PIX'
 
         if (pagamentos.length === 0) {
             await conexao.query(
-                `INSERT INTO pag_pagamento 
+                `INSERT INTO pag_pagamento
                  (Res_Id, Pag_Metodo, Pag_Status, Pag_Valor, Pag_DataHora, Pag_TransacaoId)
                  VALUES (?, ?, 'APROVADO', ?, NOW(), ?)`,
                 [reservaId, metodoBanco, valorGravar, String(transacaoId)]
             );
         } else {
             await conexao.query(
-                `UPDATE pag_pagamento 
+                `UPDATE pag_pagamento
                  SET Pag_Status = 'APROVADO', Pag_Metodo = ?, Pag_Valor = ?, Pag_TransacaoId = ?, Pag_DataHora = NOW()
                  WHERE Res_Id = ?`,
                 [metodoBanco, valorGravar, String(transacaoId), reservaId]
@@ -109,15 +117,18 @@ async function efetivarAprovacaoPagamento(reservaId, transacaoId, metodo = 'PIX'
             [reservaId]
         );
 
-        if (resUpd.affectedRows === 1) {
-            await conexao.query(
-                `INSERT INTO his_historicoreservastatus 
-                 (Res_Id, His_DataAlteracao, His_StatusAnterior, His_StatusAtual, His_Motivo)
-                 VALUES (?, NOW(), 'PAGAMENTO_PENDENTE', 'CONFIRMADA', 'Pagamento aprovado via Mercado Pago')`,
-                [reservaId]
-            );
-            dadosReservaNotificar = dadosReserva;
+        if (resUpd.affectedRows !== 1) {
+            await conexao.rollback();
+            return { confirmada: false, motivo: 'ATUALIZACAO_RESERVA_NAO_APLICADA' };
         }
+
+        await conexao.query(
+            `INSERT INTO his_historicoreservastatus
+             (Res_Id, His_DataAlteracao, His_StatusAnterior, His_StatusAtual, His_Motivo)
+             VALUES (?, NOW(), 'PAGAMENTO_PENDENTE', 'CONFIRMADA', 'Pagamento aprovado via Mercado Pago')`,
+            [reservaId]
+        );
+        dadosReservaNotificar = dadosReserva;
 
         await conexao.commit();
     } catch (err) {
@@ -184,6 +195,8 @@ async function efetivarAprovacaoPagamento(reservaId, transacaoId, metodo = 'PIX'
                 }).catch(errEmail => console.error('Falha ao processar emails de confirmação de pagamento:', errEmail));
             }
         }
+
+    return { confirmada: true, motivo: 'PAGAMENTO_CONFIRMADO' };
 }
 
 /**
@@ -285,7 +298,7 @@ exports.consultarStatus = async (req, res) => {
         const usuarioId = req.usuario.id;
 
         const [reservas] = await db.query(
-            `SELECT Hos_Hospede_Usu_Id, Res_Status FROM res_reserva WHERE Res_Id = ?`,
+            `SELECT Hos_Hospede_Usu_Id, Res_Status, Res_ValorTotal FROM res_reserva WHERE Res_Id = ?`,
             [reservaId]
         );
 
@@ -303,13 +316,15 @@ exports.consultarStatus = async (req, res) => {
         if (reservaStatus === 'PAGAMENTO_PENDENTE' && process.env.NODE_ENV !== 'test') {
             const pagamentoMP = await buscarPagamentoPorReserva(reservaId);
             if (pagamentoMP && pagamentoMP.status === 'approved') {
-                await efetivarAprovacaoPagamento(
+                const resultado = await efetivarAprovacaoPagamento(
                     reservaId,
                     pagamentoMP.id,
                     pagamentoMP.payment_method_id || 'CARTAO_CREDITO',
-                    req.app
+                    req.app,
+                    pagamentoMP.transaction_amount,
+                    pagamentoMP.currency_id
                 );
-                reservaStatus = 'CONFIRMADA';
+                if (resultado.confirmada) reservaStatus = 'CONFIRMADA';
             }
         }
 
@@ -371,11 +386,6 @@ exports.receberWebhook = async (req, res) => {
         const pagamentoMP = await consultarPagamento(paymentId);
         if (!pagamentoMP) return;
 
-        if (pagamentoMP.currency_id && pagamentoMP.currency_id !== 'BRL') {
-            console.warn(`[WEBHOOK] Moeda inválida: ${pagamentoMP.currency_id}`);
-            return;
-        }
-
         const reservaId = extrairReservaIdDeReferencia(pagamentoMP.external_reference);
         const statusMP = pagamentoMP.status;
 
@@ -387,7 +397,8 @@ exports.receberWebhook = async (req, res) => {
                 paymentId,
                 pagamentoMP.payment_method_id || 'CARTAO_CREDITO',
                 req.app,
-                pagamentoMP.transaction_amount
+                pagamentoMP.transaction_amount,
+                pagamentoMP.currency_id
             );
         } else {
             let statusBanco = 'PENDENTE';
@@ -425,7 +436,7 @@ exports.simularAprovacao = async (req, res) => {
         }
 
         const [reservas] = await db.query(
-            `SELECT Res_Id, Res_Status, Hos_Hospede_Usu_Id FROM res_reserva WHERE Res_Id = ?`,
+            `SELECT Res_Id, Res_Status, Hos_Hospede_Usu_Id, Res_ValorTotal FROM res_reserva WHERE Res_Id = ?`,
             [reservaId]
         );
 
@@ -442,7 +453,21 @@ exports.simularAprovacao = async (req, res) => {
         }
 
         const transacaoSimulada = `SIM_${Date.now()}`;
-        await efetivarAprovacaoPagamento(reservaId, transacaoSimulada, 'PIX', req.app);
+        const resultado = await efetivarAprovacaoPagamento(
+            reservaId,
+            transacaoSimulada,
+            'PIX',
+            req.app,
+            reserva.Res_ValorTotal,
+            'BRL'
+        );
+        if (!resultado.confirmada) {
+            return res.status(409).json({
+                error: 'O pagamento simulado não foi confirmado.',
+                motivo: resultado.motivo,
+                novoStatus: reserva.Res_Status
+            });
+        }
 
         return res.status(200).json({
             message: 'Pagamento simulado com sucesso! Reserva confirmada.',

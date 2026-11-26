@@ -252,13 +252,15 @@ exports.listarReservas = async (req, res) => {
                     try {
                         const pagamentoMP = await buscarPagamentoPorReserva(r.id);
                         if (pagamentoMP && pagamentoMP.status === 'approved') {
-                            await efetivarAprovacaoPagamento(
+                            const resultado = await efetivarAprovacaoPagamento(
                                 r.id,
                                 pagamentoMP.id,
                                 pagamentoMP.payment_method_id || 'CARTAO_CREDITO',
-                                req.app
+                                req.app,
+                                pagamentoMP.transaction_amount,
+                                pagamentoMP.currency_id
                             );
-                            r.status = 'CONFIRMADA';
+                            if (resultado.confirmada) r.status = 'CONFIRMADA';
                         }
                     } catch (errSync) {
                         console.error(`Erro ao sincronizar status do pagamento da reserva #${r.id}:`, errSync.message);

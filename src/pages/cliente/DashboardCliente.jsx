@@ -1397,7 +1397,11 @@ function DashboardCliente() {
           motivo: dados?.calculo?.descricaoRegra || motivo || r.motivo
         } : r
       );
-      if (!IS_API_AVAILABLE) salvarReservas(atualizadas);
+      if (IS_API_AVAILABLE) {
+        setReservas(atualizadas);
+      } else {
+        salvarReservas(atualizadas);
+      }
       setModalCancelar(null);
       if (modalDetalhe && modalDetalhe.id === id) {
         setModalDetalhe(null);
