@@ -2,7 +2,7 @@ const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 
 const INFO_EPOCA = 'rf02/session-epoch/v1';
-const EXPIRACAO_SESSAO = '7d';
+const EXPIRACAO_SESSAO = '24h';
 
 function erroConfiguracao() {
     const erro = new Error('Configuração de sessão indisponível.');
